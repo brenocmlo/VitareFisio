@@ -1,0 +1,91 @@
+{
+  
+  "name": "vitarefisio",
+  
+  "version": "1.0.0",
+  
+  "description": "",
+  
+  "main": "index.js",
+  
+  "scripts": {
+  
+    
+  "dev": "ts-node-dev --inspect --transpile-only --ignore-watch node_modules src/server.ts"
+  
+  },
+  
+  "repository": {
+  
+    
+  "type": "git",
+  
+    
+  "url": "git+https://github.com/brenocmlo/VitareFisio.git"
+  
+  },
+  
+  "keywords": [],
+  
+  "author": "",
+  
+  "license": "ISC",
+  
+  "type": "commonjs",
+  
+  "bugs": {
+  
+    
+  "url": "https://github.com/brenocmlo/VitareFisio/issues"
+  
+  },
+  
+  "homepage": "https://github.com/brenocmlo/VitareFisio#readme",
+  
+  "dependencies": {
+  
+    
+  "bcryptjs": "^3.0.3",
+  
+    
+  "cors": "^2.8.6",
+  
+    
+  "dotenv": "^17.4.2",
+  
+    
+  "express": "^5.2.1",
+  
+    
+  "jsonwebtoken": "^9.0.3",
+  
+    
+  "mysql2": "^3.22.0",
+  
+    
+  "reflect-metadata": "^0.2.2",
+  
+    
+  "typeorm": "^0.3.28",
+  
+    
+  "zod": "^4.3.6"
+  
+  },
+  
+  "devDependencies": {
+  
+    
+  "@types/cors": "^2.8.19",
+  
+    
+  "@types/express": "^5.0.6",
+  
+    
+  "ts-node-dev": "^2.0.0",
+  
+    
+  "typescript": "^6.0.2"
+  
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es2017",                          
+    "module": "commonjs",                                
+    "lib": ["es6"],                                   
+    "allowJs": true,
+    "outDir": "./dist",                          
+    "rootDir": "./src",                          
+    "experimentalDecorators": true,        /* OBRIGATÓRIO PARA TYPEORM */
+    "emitDecoratorMetadata": true,         /* OBRIGATÓRIO PARA TYPEORM */
+    "esModuleInterop": true,               /* PARA IMPORTAR DOTENV/EXPRESS CORRETAMENTE */
+    "forceConsistentCasingInFileNames": true,            
+    "strict": true,                                      
+    "strictPropertyInitialization": false, /* EVITA ERROS NAS ENTIDADES */
+    "skipLibCheck": true                                 
+  }
+}
