@@ -2,7 +2,6 @@ import {
     Entity, 
     PrimaryGeneratedColumn, 
     Column, 
-    CreateDateColumn, 
     ManyToOne, 
     JoinColumn 
 } from "typeorm";
@@ -15,8 +14,8 @@ export class Agendamento {
     @PrimaryGeneratedColumn()
     id: number;
 
-    // A data e hora exata da sessão de fisioterapia
-    @Column({ type: "datetime" })
+    // Mapeia a propriedade usada no app para a coluna real da tabela.
+    @Column({ name: "data_hora_inicio", type: "datetime" })
     data_hora: Date;
 
     // Máquina de Estados: Controla a jornada do paciente naquele dia
@@ -28,7 +27,7 @@ export class Agendamento {
     status: string;
 
     @Column({ type: "text", nullable: true })
-    observacoes: string;
+    observacoes?: string;
 
     // --- RELACIONAMENTO COM O PACIENTE ---
     
@@ -36,13 +35,11 @@ export class Agendamento {
     @Column()
     paciente_id: number;
 
+    @Column()
+    fisioterapeuta_id: number;
+
     // 2. A "Mágica" do TypeORM: Ensina que Muitos (Many) Agendamentos pertencem a Um (One) Paciente
     @ManyToOne(() => Paciente)
     @JoinColumn({ name: "paciente_id" })
     paciente: Paciente;
-
-    // -------------------------------------
-
-    @CreateDateColumn()
-    data_criacao: Date;
 }

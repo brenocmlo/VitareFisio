@@ -2,14 +2,22 @@ import { z } from "zod";
 
 export const createPacienteSchema = z.object({
     clinica_id: z.number({
-        required_error: "O ID da clínica é obrigatório.",
-        invalid_type_error: "O ID da clínica deve ser um número.",
+        error: (issue) =>
+            issue.input === undefined
+                ? "O ID da clínica é obrigatório."
+                : "O ID da clínica deve ser um número.",
     }),
     nome: z.string({
-        required_error: "O nome do paciente é obrigatório.",
+        error: (issue) =>
+            issue.input === undefined
+                ? "O nome do paciente é obrigatório."
+                : "O nome do paciente deve ser um texto válido.",
     }).min(3, "O nome deve ter pelo menos 3 letras."),
     cpf: z.string({
-        required_error: "O CPF é obrigatório.",
+        error: (issue) =>
+            issue.input === undefined
+                ? "O CPF é obrigatório."
+                : "O CPF deve ser um texto válido.",
     })
     .length(11, "O CPF deve conter exatamente 11 números, sem traços ou pontos.")
     .regex(/^\d+$/, "O CPF deve conter apenas números."),
