@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { CreateClinicaService } from "../service/CreateClinicaService";
+import { CreateClinicaService } from "../services/CreateClinicaService";
 
 export class ClinicaController {
     async create(req: Request, res: Response) {

@@ -1,6 +1,6 @@
 ### Configurações Globais
 @baseUrl = http://localhost:3333
-@token = COLE_O_TOKEN_AQUI_APOS_LOGIN
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGluaWNhX2lkIjoxLCJpYXQiOjE3NzY0MzExNTAsImV4cCI6MTc3NjUxNzU1MCwic3ViIjoiMSJ9.pZAWQv67A4DAf_F-jcbADY2ECahTX-NWzni8IEShrrU
 @clinicaId = 1
 @fisioterapeutaId = 1
 @pacienteId = 1
@@ -149,6 +149,21 @@ Raio-X da Coluna
 --boundary
 Content-Disposition: form-data; name="documento"; filename="exame.pdf"
 Content-Type: application/pdf
+### Gerar Lembrete de WhatsApp para Agendamento
+GET {{baseUrl}}/agendamentos/1/lembrete
+Authorization: Bearer {{token}}
+### Cadastro de Fisioterapeuta Autônomo
+POST {{baseUrl}}/signup/autonomo
+Content-Type: application/json
 
-< ./caminho/para/seu/arquivo/local/exame.pdf
+{
+  "nome": "Dr. Ricardo Silva",
+  "email": "ricardo.fisio@teste.com",
+  "password": "senha123456",
+  "cpf": "12345678901",
+  "crefito": "CREFITO-3/12345-F",
+  "telefone": "11999999999"
+}
+
+### <- Se tiver outra requisição abaixo, garanta que ela tem o ### separando!
 --boundary--

@@ -18,6 +18,8 @@ export class Agendamento {
     @Column({ name: "data_hora_inicio", type: "datetime" })
     data_hora: Date;
 
+    @Column()
+    data_hora_fim: Date;
     // Máquina de Estados: Controla a jornada do paciente naquele dia
     @Column({ 
         type: "enum", 
@@ -34,6 +36,9 @@ export class Agendamento {
     // 1. A coluna que vai guardar o ID no banco de dados
     @Column()
     paciente_id: number;
+
+    @Column()
+    clinica_id: number;
 
     @Column()
     fisioterapeuta_id: number;

@@ -11,9 +11,11 @@ import { PacienteController } from "./modules/patients/controllers/PacienteContr
 import { AgendamentoController } from "./modules/appointments/controllers/AgendamentoController";
 import { EvolucaoController } from "./modules/appointments/controllers/EvolucaoController";
 import { PagamentoController } from "./modules/finance/controllers/PagamentoController";
-import { DashboardController } from "./modules/dashboard/controllers/DashboardController";
+import { DashboardController } from "./modules/clinics/controllers/DashboardController"; // <-- CORRIGIDO
 import { AnexoController } from "./modules/patients/controllers/AnexoController";
 import { ReportController } from "./modules/clinics/controllers/ReportController";
+import { RegistrationController } from "./modules/clinics/controllers/RegistrationController";
+import { createAutonomoSchema } from "./modules/clinics/schemas/createAutonomoSchema";
 
 // --- MIDDLEWARES E VALIDAÇÕES ---
 import { ensureAuthenticated } from "./shared/middlewares/ensureAuthenticated";
@@ -24,6 +26,7 @@ import { createFisioterapeutaSchema } from "./modules/clinics/schemas/createFisi
 import { createPacienteSchema } from "./modules/patients/schemas/createPacienteSchema";
 import { createAgendamentoSchema } from "./modules/appointments/schemas/createAgendamentoSchema";
 import { createEvolucaoSchema } from "./modules/appointments/schemas/createEvolucaoSchema";
+import { createPagamentoSchema } from "./modules/finance/schemas/createPagamentoSchema";
 
 const routes = Router();
 const upload = multer(uploadConfig);
@@ -40,6 +43,7 @@ const pagamentoController = new PagamentoController();
 const dashboardController = new DashboardController();
 const anexoController = new AnexoController();
 const reportController = new ReportController();
+const registrationController = new RegistrationController();
 
 // ==========================================
 // 🔓 ROTAS PÚBLICAS
@@ -47,6 +51,7 @@ const reportController = new ReportController();
 routes.post("/usuarios", validateRequest(createUserSchema), userController.create);
 routes.post("/clinicas", validateRequest(createClinicaSchema), clinicaController.create);
 routes.post("/login", sessionsController.create);
+routes.post("/signup/autonomo", validateRequest(createAutonomoSchema), registrationController.signupAutonomo);
 
 // ==========================================
 // 🔐 ROTAS PRIVADAS (Requerem Autenticação)
@@ -55,7 +60,7 @@ routes.use(ensureAuthenticated);
 
 // --- GESTÃO DE CLÍNICA & EQUIPE ---
 routes.post("/fisioterapeutas", validateRequest(createFisioterapeutaSchema), fisioterapeutaController.create);
-routes.get("/dashboard", dashboardController.index);
+routes.get("/dashboard", dashboardController.getMetrics); // <-- CORRIGIDO
 
 // --- PACIENTES ---
 routes.post("/pacientes", validateRequest(createPacienteSchema), pacienteController.create);
@@ -67,19 +72,24 @@ routes.get("/anexos/:id", anexoController.show);
 
 // --- AGENDA E ATENDIMENTOS ---
 routes.post("/agendamentos", validateRequest(createAgendamentoSchema), agendamentoController.create);
-routes.patch("/agendamentos/:id/reagendar", agendamentoController.update); // Única e limpa
+routes.patch("/agendamentos/:id/reagendar", agendamentoController.update);
+routes.get("/agendamentos", agendamentoController.index);
+routes.delete("/agendamentos/:id", agendamentoController.delete);
 
 // --- PRONTUÁRIO (EVOLUÇÕES) ---
 routes.post("/evolucoes", validateRequest(createEvolucaoSchema), evolucaoController.create);
 routes.get("/pacientes/:paciente_id/evolucoes", evolucaoController.index);
-routes.put("/evolucoes/:id", evolucaoController.update); // Trava de 24h tratada no Service
-routes.patch("/evolucoes/:id/finalizar", evolucaoController.finalize); // Movi a lógica para o Controller!
+routes.put("/evolucoes/:id", evolucaoController.update);
+routes.patch("/evolucoes/:id/finalizar", evolucaoController.finalize);
 
 // --- FINANCEIRO ---
-routes.get("/pagamentos", pagamentoController.index);
-routes.patch("/pagamentos/:id/baixa", pagamentoController.update);
+routes.post("/pagamentos", validateRequest(createPagamentoSchema), pagamentoController.create);
 
 // --- RELATÓRIOS ---
 routes.get("/pacientes/:paciente_id/relatorio", reportController.exportProntuario);
+
+// --- COMUNICAÇÃO ---
+// Gerar link de WhatsApp para o lembrete da sessão
+routes.get("/agendamentos/:id/lembrete", agendamentoController.generateReminder);
 
 export { routes };

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { CreateFisioterapeutaService } from "../service/CreateFisioterapeutaService";
+import { CreateFisioterapeutaService } from "../services/CreateFisioterapeutaService";
 
 export class FisioterapeutaController {
     async create(req: Request, res: Response) {

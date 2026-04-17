@@ -7,6 +7,12 @@ export const createAgendamentoSchema = z.object({
                 ? "O ID do paciente é obrigatório."
                 : "O ID do paciente deve ser um número.",
     }),
+    clinica_id: z.number({
+        error: (issue) =>
+            issue.input === undefined
+                ? "O ID da clínica é obrigatório."
+                : "O ID da clínica deve ser um número.",
+    }),
     fisioterapeuta_id: z.number({
         error: (issue) =>
             issue.input === undefined
