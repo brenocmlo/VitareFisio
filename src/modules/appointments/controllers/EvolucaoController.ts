@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { CreateEvolucaoService } from "../services/CreateEvolucaoService";
 import { ListEvolucoesByPacienteService } from "../services/ListEvolucoesByPacienteService";
 import { UpdateEvolucaoService } from "../services/UpdateEvolucaoService"; // Importe o novo service
+import { FinalizeEvolucaoService } from "../services/FinalizeEvolucaoService";
 export class EvolucaoController {
     // O nome do método deve ser exatamente 'create'
     async create(req: Request, res: Response) { 
