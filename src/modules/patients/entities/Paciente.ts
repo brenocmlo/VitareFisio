@@ -7,7 +7,7 @@ export class Paciente {
     id: number;
 
     @Column()
-    clinica_id: number; // <-- ADICIONADO
+    clinica_id: number;
 
     @Column()
     nome: string;
@@ -18,20 +18,17 @@ export class Paciente {
     @Column()
     data_nascimento: Date;
 
+    // AQUI O SEGREDO: Mude de 'telefone' para 'contato_whatsapp'
     @Column()
-    telefone: string;
+    contato_whatsapp: string;
 
-    @Column({ nullable: true })
-    email: string;
+    // AQUI TAMBÉM: Mude de 'endereco' para 'endereco_completo'
+    @Column("text", { nullable: true })
+    endereco_completo: string;
 
-    @Column({ nullable: true })
+    @Column("decimal", { precision: 10, scale: 2 })
     valor_sessao: number;
 
     @CreateDateColumn()
     data_criacao: Date;
-
-    // Relacionamento com a Clínica
-    @ManyToOne(() => Clinica)
-    @JoinColumn({ name: "clinica_id" })
-    clinica: Clinica;
 }

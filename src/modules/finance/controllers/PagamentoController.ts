@@ -1,23 +1,33 @@
 import { Request, Response } from "express";
-import { CreatePagamentoService } from "../services/CreatePagamentoService";
+import { AppDataSource } from "../../../data-source";
+import { Pagamento } from "../entities/Pagamento";
 
 export class PagamentoController {
-    async create(req: Request, res: Response) {
-        try {
-            const { paciente_id, agendamento_id, valor, forma_pagamento } = req.body;
-            
-            const createPagamentoService = new CreatePagamentoService();
+    // Lista todos os pagamentos (útil para o financeiro)
+    async index(req: Request, res: Response) {
+        const repo = AppDataSource.getRepository(Pagamento);
+        const pagamentos = await repo.find({ relations: ["paciente"] });
+        return res.json(pagamentos);
+    }
 
-            const pagamento = await createPagamentoService.execute({
-                paciente_id,
-                agendamento_id,
-                valor,
-                forma_pagamento
-            });
+    // Dá baixa no pagamento (Mudar para 'pago')
+    async update(req: Request, res: Response) {
+        const { id } = req.params;
+        const { forma_pagamento } = req.body;
+        
+        const repo = AppDataSource.getRepository(Pagamento);
+        const pagamento = await repo.findOneBy({ id: Number(id) });
 
-            return res.status(201).json(pagamento);
-        } catch (error: any) {
-            return res.status(400).json({ error: error.message });
+        if (!pagamento) {
+            return res.status(404).json({ error: "Lançamento financeiro não encontrado." });
         }
+
+        pagamento.status = "pago";
+        pagamento.forma_pagamento = forma_pagamento;
+        pagamento.data_pagamento = new Date();
+
+        await repo.save(pagamento);
+
+        return res.json(pagamento);
     }
 }

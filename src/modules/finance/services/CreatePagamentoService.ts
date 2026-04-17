@@ -5,23 +5,22 @@ interface IRequest {
     paciente_id: number;
     agendamento_id?: number;
     valor: number;
-    forma_pagamento: string;
+    data_vencimento: Date;
 }
 
 export class CreatePagamentoService {
-    async execute({ paciente_id, agendamento_id, valor, forma_pagamento }: IRequest) {
+    async execute({ paciente_id, agendamento_id, valor, data_vencimento }: IRequest) {
         const pagamentoRepository = AppDataSource.getRepository(Pagamento);
 
         const pagamento = pagamentoRepository.create({
             paciente_id,
             agendamento_id,
             valor,
-            forma_pagamento,
-            status: 'pago' // Baixa manual assume recebimento imediato
+            data_vencimento,
+            status: "pendente"
         });
 
         await pagamentoRepository.save(pagamento);
-
         return pagamento;
     }
 }

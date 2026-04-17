@@ -1,6 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from "typeorm";
 import { Paciente } from "../../patients/entities/Paciente";
-import { Agendamento } from "../../appointments/entities/Agendamento";
 
 @Entity("pagamentos")
 export class Pagamento {
@@ -16,20 +15,22 @@ export class Pagamento {
     @Column("decimal", { precision: 10, scale: 2 })
     valor: number;
 
-    @Column({ type: "enum", enum: ['dinheiro', 'cartao_credito', 'cartao_debito', 'pix', 'convenio'] })
-    forma_pagamento: string;
-
-    @Column({ type: "enum", enum: ['pendente', 'pago', 'cancelado'], default: 'pago' })
+    @Column({ type: "enum", enum: ["pendente", "pago", "cancelado"], default: "pendente" })
     status: string;
 
-    @CreateDateColumn()
+    @Column({ type: "enum", enum: ["dinheiro", "cartao", "pix", "convenio"], nullable: true })
+    forma_pagamento: string;
+
+    @Column()
+    data_vencimento: Date;
+
+    @Column({ nullable: true })
     data_pagamento: Date;
+
+    @CreateDateColumn()
+    data_criacao: Date;
 
     @ManyToOne(() => Paciente)
     @JoinColumn({ name: "paciente_id" })
     paciente: Paciente;
-
-    @ManyToOne(() => Agendamento)
-    @JoinColumn({ name: "agendamento_id" })
-    agendamento: Agendamento;
 }

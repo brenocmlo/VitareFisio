@@ -60,7 +60,13 @@
   "jsonwebtoken": "^9.0.3",
   
     
+  "multer": "^2.1.1",
+  
+    
   "mysql2": "^3.22.0",
+  
+    
+  "pdfkit": "^0.18.0",
   
     
   "reflect-metadata": "^0.2.2",
@@ -86,6 +92,12 @@
   
     
   "@types/jsonwebtoken": "^9.0.10",
+  
+    
+  "@types/multer": "^2.1.0",
+  
+    
+  "@types/pdfkit": "^0.17.6",
   
     
   "ts-node-dev": "^2.0.0",

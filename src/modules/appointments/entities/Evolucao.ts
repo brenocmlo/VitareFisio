@@ -18,7 +18,24 @@ export class Evolucao {
 
     @Column("text", { nullable: true })
     procedimentos: string;
+    
+    @Column({ nullable: true })
+    cid_10: string;
 
+    @Column("text", { nullable: true })
+    diagnostico_fisioterapeutico: string;
+
+    @Column("text", { nullable: true })
+    objetivos_tratamento: string;
+    @Column({ nullable: true })
+    hash_integridade: string;
+
+    @Column({ default: false })
+    finalizada: boolean;
+
+    @Column({ nullable: true })
+    data_finalizacao: Date;
+    
     @CreateDateColumn()
     data_criacao: Date;
 

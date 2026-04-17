@@ -1,0 +1,154 @@
+### Configurações Globais
+@baseUrl = http://localhost:3333
+@token = COLE_O_TOKEN_AQUI_APOS_LOGIN
+@clinicaId = 1
+@fisioterapeutaId = 1
+@pacienteId = 1
+@agendamentoId = 1
+
+#########################################
+### 1. AUTENTICAÇÃO E UTILIZADORES
+#########################################
+
+### Criar Novo Utilizador (Fisioterapeuta)
+POST {{baseUrl}}/usuarios
+Content-Type: application/json
+
+{
+  "nome": "Fisioterapeuta de Teste",
+  "email": "teste@vitarefisio.com",
+  "cpf": "12345678901",
+  "senha": "123456",
+  "clinica_id": {{clinicaId}},
+  "tipo": "fisioterapeuta"
+}
+
+### Login (Executa este primeiro para pegar o Token)
+# @name login
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "teste@vitarefisio.com",
+  "senha": "123456"
+}
+
+#########################################
+### 2. CLÍNICAS E UNIDADES
+#########################################
+
+### Criar Clínica
+POST {{baseUrl}}/clinicas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nome_fantasia": "Vitare Fisio Centro",
+  "razao_social": "Vitare Clinica de Fisioterapia LTDA",
+  "cnpj": "12345678000199",
+  "telefone": "11999998888",
+  "endereco": "Rua da Saúde, 123"
+}
+
+#########################################
+### 3. PACIENTES
+#########################################
+
+### Criar Paciente (Com o teu Schema personalizado)
+POST {{baseUrl}}/pacientes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "clinica_id": {{clinicaId}},
+  "nome": "João da Silva",
+  "cpf": "98765432100",
+  "data_nascimento": "1985-10-20",
+  "contato_whatsapp": "11977776666",
+  "endereco_completo": "Av. Principal, 456",
+  "valor_sessao": 120.00
+}
+
+### Listar Pacientes da Clínica
+GET {{baseUrl}}/pacientes?clinica_id={{clinicaId}}
+Authorization: Bearer {{token}}
+
+#########################################
+### 4. AGENDA E ATENDIMENTOS
+#########################################
+
+### Criar Agendamento
+POST {{baseUrl}}/agendamentos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "clinica_id": 1, 
+  "nome": "João da Silva",
+  "cpf": "12345678901",
+  "contato_whatsapp": "11999998888",
+  "valor_sessao": 150.00,
+  "paciente_id": 1,
+  "fisioterapeuta_id": 1,
+  "data_hora": "2026-04-20T14:00:00Z",
+  "observacoes": "Paciente com dor lombar aguda"
+
+}
+### Listar Agenda do Fisioterapeuta
+GET {{baseUrl}}/agendamentos?fisioterapeuta_id={{fisioterapeutaId}}
+Authorization: Bearer {{token}}
+
+### Cancelar Agendamento
+DELETE {{baseUrl}}/agendamentos/{{agendamentoId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "motivo": "Paciente avisou que teve um imprevisto no trabalho"
+}
+
+#########################################
+### 5. PRONTUÁRIO (EVOLUÇÕES)
+#########################################
+
+### Criar Evolução Detalhada
+POST {{baseUrl}}/evolucoes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "agendamento_id": {{agendamentoId}},
+  "paciente_id": {{pacienteId}},
+  "descricao": "Realizado protocolo de analgesia e mobilização articular.",
+  "cid_10": "M54.5",
+  "diagnostico_fisioterapeutico": "Instabilidade segmentar lombar",
+  "objetivos_tratamento": "Redução da escala de dor de 8 para 4"
+}
+
+### Ver Histórico Clínico do Paciente
+GET {{baseUrl}}/pacientes/{{pacienteId}}/evolucoes
+Authorization: Bearer {{token}}
+
+#########################################
+### 6. GESTÃO E DASHBOARD
+#########################################
+
+### Dashboard de Resumo
+GET {{baseUrl}}/dashboard
+Authorization: Bearer {{token}}
+
+### Upload de Exame do Paciente
+POST {{baseUrl}}/pacientes/1/anexos
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="titulo"
+
+Raio-X da Coluna
+--boundary
+Content-Disposition: form-data; name="documento"; filename="exame.pdf"
+Content-Type: application/pdf
+
+< ./caminho/para/seu/arquivo/local/exame.pdf
+--boundary--
