@@ -2,12 +2,15 @@ import { AppDataSource } from "../../../data-source";
 import { Paciente } from "../entities/Paciente";
 
 export class ListPacientesService {
-    async execute(): Promise<Paciente[]> {
+    async execute(clinica_id?: number): Promise<Paciente[]> {
         const pacienteRepository = AppDataSource.getRepository(Paciente);
-        
-        // O método .find() busca todos os registros da tabela
-        const pacientes = await pacienteRepository.find();
-        
-        return pacientes;
+
+        if (clinica_id) {
+            return pacienteRepository.find({
+                where: { clinica_id }
+            });
+        }
+
+        return pacienteRepository.find();
     }
 }

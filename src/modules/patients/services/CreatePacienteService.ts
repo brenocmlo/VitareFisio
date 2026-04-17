@@ -1,7 +1,6 @@
 import { AppDataSource } from "../../../data-source";
 import { Paciente } from "../entities/Paciente";
 
-// Tipagem dos dados que esperamos receber
 interface IRequest {
     clinica_id: number;
     nome: string;
@@ -10,22 +9,20 @@ interface IRequest {
     contato_whatsapp?: string;
     endereco_completo?: string;
     convenio_nome?: string;
+    valor_sessao?: number;
 }
 
 export class CreatePacienteService {
-    async execute(data: IRequest): Promise<Paciente> {
-        // Pega o repositório do TypeORM para manipular a tabela de pacientes
+    async execute(dados: IRequest) {
         const pacienteRepository = AppDataSource.getRepository(Paciente);
 
-        // REGRA DE NEGÓCIO 1: Verificar se o CPF já existe
-        const pacienteExists = await pacienteRepository.findOneBy({ cpf: data.cpf });
-        
-        if (pacienteExists) {
-            throw new Error("Já existe um paciente cadastrado com este CPF.");
+        // Verifica duplicidade de CPF
+        const pacienteExistente = await pacienteRepository.findOneBy({ cpf: dados.cpf });
+        if (pacienteExistente) {
+            throw new Error("Paciente já cadastrado com este CPF.");
         }
 
-        // REGRA DE NEGÓCIO 2: Criar a instância e salvar
-        const paciente = pacienteRepository.create(data);
+        const paciente = pacienteRepository.create(dados);
         await pacienteRepository.save(paciente);
 
         return paciente;

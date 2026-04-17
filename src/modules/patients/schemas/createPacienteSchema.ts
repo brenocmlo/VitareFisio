@@ -24,5 +24,6 @@ export const createPacienteSchema = z.object({
     data_nascimento: z.string().optional(),
     contato_whatsapp: z.string().optional(),
     endereco_completo: z.string().optional(),
-    convenio_nome: z.string().optional()
+    convenio_nome: z.string().optional(),
+    valor_sessao: z.number().optional() // Essencial para o cálculo de saldo
 });

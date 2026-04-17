@@ -1,46 +1,37 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from "typeorm";
+import { Clinica } from "../../clinics/entities/Clinica"; // Certifique-se de que o caminho está correto
 
-@Entity("pacientes") // Define o nome exato da tabela no MySQL
+@Entity("pacientes")
 export class Paciente {
     @PrimaryGeneratedColumn()
     id: number;
 
-    // Por enquanto será uma coluna normal, depois faremos o relacionamento @ManyToOne com a entidade Clinica
     @Column()
-    clinica_id: number; 
+    clinica_id: number; // <-- ADICIONADO
 
-    @Column({ length: 100 })
+    @Column()
     nome: string;
 
-    @Column({ length: 14, unique: true })
+    @Column({ unique: true })
     cpf: string;
 
-    @Column({ type: "date", nullable: true })
+    @Column()
     data_nascimento: Date;
 
-    @Column({ length: 20, nullable: true })
-    contato_whatsapp: string;
+    @Column()
+    telefone: string;
 
-    @Column({ type: "text", nullable: true })
-    endereco_completo: string;
+    @Column({ nullable: true })
+    email: string;
 
-    @Column({ length: 50, default: "Particular" })
-    convenio_nome: string;
-
-    @Column({ 
-        type: "enum", 
-        enum: ["em_dia", "pendente", "inadimplente"], 
-        default: "em_dia" 
-    })
-    situacao_financeira: string;
-
-    @Column({ 
-        type: "enum", 
-        enum: ["ativo", "inativo"], 
-        default: "ativo" 
-    })
-    status: string;
+    @Column({ nullable: true })
+    valor_sessao: number;
 
     @CreateDateColumn()
-    data_cadastro: Date;
+    data_criacao: Date;
+
+    // Relacionamento com a Clínica
+    @ManyToOne(() => Clinica)
+    @JoinColumn({ name: "clinica_id" })
+    clinica: Clinica;
 }
