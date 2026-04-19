@@ -31,11 +31,11 @@ export class AuthenticateUserService {
         });
 
         return {
-            usuario: {
-                id: usuario.id,
-                nome: usuario.nome,
-                email: usuario.email,
-                clinica_id: usuario.clinica_id
+            user: { // MUDADO DE 'usuario' PARA 'user' para bater com o Frontend
+            id: usuario.id,
+            nome: usuario.nome,
+            email: usuario.email,
+            clinica_id: usuario.clinica_id
             },
             token,
         };

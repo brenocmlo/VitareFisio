@@ -13,7 +13,7 @@ export const AppDataSource = new DataSource({
     username: process.env.DB_USER || "root",
     password: process.env.DB_PASSWORD || "1206", // <-- Coloque sua senha do MySQL se o .env falhar
     database: process.env.DB_NAME || "vitarefisio_db",
-    synchronize: false,
+    synchronize: true,
     logging: true,
     entities: ["src/modules/**/entities/*.ts"],
     migrations: ["src/shared/infra/typeorm/migrations/*.ts"],
