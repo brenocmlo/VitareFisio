@@ -13,6 +13,7 @@ import { EvolucaoController } from "./modules/appointments/controllers/EvolucaoC
 import { PagamentoController } from "./modules/finance/controllers/PagamentoController";
 import { DashboardController } from "./modules/clinics/controllers/DashboardController"; // <-- CORRIGIDO
 import { AnexoController } from "./modules/patients/controllers/AnexoController";
+import { AnamneseController } from "./modules/patients/controllers/AnamneseController";
 import { ReportController } from "./modules/clinics/controllers/ReportController";
 import { RegistrationController } from "./modules/clinics/controllers/RegistrationController";
 import { createAutonomoSchema } from "./modules/clinics/schemas/createAutonomoSchema";
@@ -42,6 +43,7 @@ const evolucaoController = new EvolucaoController();
 const pagamentoController = new PagamentoController();
 const dashboardController = new DashboardController();
 const anexoController = new AnexoController();
+const anamneseController = new AnamneseController();
 const reportController = new ReportController();
 const registrationController = new RegistrationController();
 
@@ -63,9 +65,11 @@ routes.post("/fisioterapeutas", validateRequest(createFisioterapeutaSchema), fis
 routes.get("/fisioterapeutas", fisioterapeutaController.index);
 routes.get("/dashboard", dashboardController.getMetrics); // <-- CORRIGIDO
 
-// --- PACIENTES ---
+// --- PACIENTES E ANAMNESE ---
 routes.post("/pacientes", validateRequest(createPacienteSchema), pacienteController.create);
 routes.get("/pacientes", pacienteController.index);
+routes.post("/pacientes/:paciente_id/anamnese", anamneseController.createOrUpdate);
+routes.get("/pacientes/:paciente_id/anamnese", anamneseController.show);
 
 // --- ANEXOS E DOCUMENTOS DO PACIENTE ---
 routes.post("/pacientes/:paciente_id/anexos", upload.single("documento"), anexoController.create);
@@ -74,6 +78,7 @@ routes.get("/anexos/:id", anexoController.show);
 // --- AGENDA E ATENDIMENTOS ---
 routes.post("/agendamentos", validateRequest(createAgendamentoSchema), agendamentoController.create);
 routes.patch("/agendamentos/:id/reagendar", agendamentoController.update);
+routes.patch("/agendamentos/:id/status", agendamentoController.updateStatus);
 routes.get("/agendamentos", agendamentoController.index);
 routes.delete("/agendamentos/:id", agendamentoController.delete);
 
@@ -85,6 +90,7 @@ routes.patch("/evolucoes/:id/finalizar", evolucaoController.finalize);
 
 // --- FINANCEIRO ---
 routes.post("/pagamentos", validateRequest(createPagamentoSchema), pagamentoController.create);
+routes.get("/pagamentos", pagamentoController.index);
 
 // --- RELATÓRIOS ---
 routes.get("/pacientes/:paciente_id/relatorio", reportController.exportProntuario);

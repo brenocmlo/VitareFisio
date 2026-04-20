@@ -15,18 +15,18 @@ export class Paciente {
     @Column({ unique: true })
     cpf: string;
 
-    @Column()
+    @Column({ nullable: true })
     data_nascimento: Date;
 
     // AQUI O SEGREDO: Mude de 'telefone' para 'contato_whatsapp'
-    @Column()
+    @Column({ nullable: true })
     contato_whatsapp: string;
 
     // AQUI TAMBÉM: Mude de 'endereco' para 'endereco_completo'
     @Column("text", { nullable: true })
     endereco_completo: string;
 
-    @Column("decimal", { precision: 10, scale: 2 })
+    @Column("decimal", { precision: 10, scale: 2, nullable: true })
     valor_sessao: number;
 
     @CreateDateColumn()

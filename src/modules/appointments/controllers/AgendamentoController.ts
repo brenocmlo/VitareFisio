@@ -3,6 +3,7 @@ import { CreateAgendamentoService } from "../services/CreateAgendamentoService";
 import { ListAgendamentosService } from "../services/ListAgendamentosService";
 import { RescheduleAgendamentoService } from "../services/RescheduleAgendamentoService";
 import { GenerateWhatsAppLinkService } from "../services/GenerateWhatsAppLinkService"; 
+import { UpdateAgendamentoStatusService } from "../services/UpdateAgendamentoStatusService";
 // Adicione este import lá no topo:
 import { CancelAgendamentoService } from "../services/CancelAgendamentoService";
 export class AgendamentoController {
@@ -49,6 +50,21 @@ export class AgendamentoController {
             const agendamento = await rescheduleAgendamentoService.execute({
                 agendamento_id: Number(id),
                 nova_data_hora: data_hora
+            });
+            return res.status(200).json(agendamento);
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    }
+
+    async updateStatus(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+            const updateStatusService = new UpdateAgendamentoStatusService();
+            const agendamento = await updateStatusService.execute({
+                agendamento_id: Number(id),
+                status
             });
             return res.status(200).json(agendamento);
         } catch (error: any) {
