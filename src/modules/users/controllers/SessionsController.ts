@@ -9,13 +9,13 @@ export class SessionsController {
             const authenticateUserService = new AuthenticateUserService();
 
             // O service valida as credenciais e gera o Token
-            const { usuario, token } = await authenticateUserService.execute({
+            const { user, token } = await authenticateUserService.execute({
                 email,
                 senha,
             });
 
             // Retornamos os dados do utilizador (sem a senha) e o token
-            return res.json({ usuario, token });
+            return res.json({ user, token });
         } catch (error: any) {
             // Se o e-mail ou senha estiverem errados, retorna 401 (Não autorizado)
             return res.status(401).json({ error: error.message });

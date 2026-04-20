@@ -60,6 +60,7 @@ routes.use(ensureAuthenticated);
 
 // --- GESTÃO DE CLÍNICA & EQUIPE ---
 routes.post("/fisioterapeutas", validateRequest(createFisioterapeutaSchema), fisioterapeutaController.create);
+routes.get("/fisioterapeutas", fisioterapeutaController.index);
 routes.get("/dashboard", dashboardController.getMetrics); // <-- CORRIGIDO
 
 // --- PACIENTES ---
