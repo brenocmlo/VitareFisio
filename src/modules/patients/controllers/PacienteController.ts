@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { CreatePacienteService } from "../services/CreatePacienteService";
 import { ListPacientesService } from "../services/ListPacientesService";
+import { AppDataSource } from "../../../data-source";
+import { Paciente } from "../entities/Paciente";
 
 export class PacienteController {
     
@@ -32,6 +34,26 @@ export class PacienteController {
             );
 
             return res.status(200).json(pacientes);
+        } catch (error: any) {
+            return res.status(400).json({ error: error.message });
+        }
+    }
+
+    // 3. NOVO MÉTODO: Exibir um paciente específico (GET /pacientes/:id)
+    async show(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            
+            const pacienteRepo = AppDataSource.getRepository(Paciente);
+            
+            // Procura o paciente pelo ID
+            const paciente = await pacienteRepo.findOneBy({ id: Number(id) });
+
+            if (!paciente) {
+                return res.status(404).json({ error: "Paciente não encontrado." });
+            }
+
+            return res.json(paciente);
         } catch (error: any) {
             return res.status(400).json({ error: error.message });
         }

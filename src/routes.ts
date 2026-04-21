@@ -68,9 +68,9 @@ routes.get("/dashboard", dashboardController.getMetrics); // <-- CORRIGIDO
 // --- PACIENTES E ANAMNESE ---
 routes.post("/pacientes", validateRequest(createPacienteSchema), pacienteController.create);
 routes.get("/pacientes", pacienteController.index);
+routes.get("/pacientes/:id", pacienteController.show); // <-- LINHA NOVA AQUI!
 routes.post("/pacientes/:paciente_id/anamnese", anamneseController.createOrUpdate);
 routes.get("/pacientes/:paciente_id/anamnese", anamneseController.show);
-
 // --- ANEXOS E DOCUMENTOS DO PACIENTE ---
 routes.post("/pacientes/:paciente_id/anexos", upload.single("documento"), anexoController.create);
 routes.get("/anexos/:id", anexoController.show);

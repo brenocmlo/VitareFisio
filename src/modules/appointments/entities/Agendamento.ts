@@ -6,21 +6,21 @@ import {
     JoinColumn 
 } from "typeorm";
 
-// Importamos a entidade de Paciente para criar o relacionamento
 import { Paciente } from "../../patients/entities/Paciente";
+// 1. Importamos a entidade de Pacote
+import { PacotePaciente } from "../../patients/entities/PacotePaciente";
 
 @Entity("agendamentos")
 export class Agendamento {
     @PrimaryGeneratedColumn()
     id: number;
 
-    // Mapeia a propriedade usada no app para a coluna real da tabela.
     @Column({ name: "data_hora_inicio", type: "datetime" })
     data_hora: Date;
 
     @Column()
     data_hora_fim: Date;
-    // Máquina de Estados: Controla a jornada do paciente naquele dia
+    
     @Column({ 
         type: "enum", 
         enum: ["agendado", "confirmado", "realizado", "faltou", "cancelado"], 
@@ -31,9 +31,6 @@ export class Agendamento {
     @Column({ type: "text", nullable: true })
     observacoes?: string;
 
-    // --- RELACIONAMENTO COM O PACIENTE ---
-    
-    // 1. A coluna que vai guardar o ID no banco de dados
     @Column()
     paciente_id: number;
 
@@ -43,8 +40,16 @@ export class Agendamento {
     @Column()
     fisioterapeuta_id: number;
 
-    // 2. A "Mágica" do TypeORM: Ensina que Muitos (Many) Agendamentos pertencem a Um (One) Paciente
+    // 2. NOVA COLUNA: Resolve o erro "Unknown column 'pacote_paciente_id'"
+    @Column({ nullable: true })
+    pacote_paciente_id: number;
+
     @ManyToOne(() => Paciente)
     @JoinColumn({ name: "paciente_id" })
     paciente: Paciente;
+
+    // 3. NOVO RELACIONAMENTO: Conecta o agendamento ao pacote
+    @ManyToOne(() => PacotePaciente, { nullable: true })
+    @JoinColumn({ name: "pacote_paciente_id" })
+    pacote: PacotePaciente;
 }

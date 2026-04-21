@@ -1,42 +1,55 @@
 import { AppDataSource } from "../../../data-source";
 import { Evolucao } from "../entities/Evolucao";
-import { Paciente } from "../../patients/entities/Paciente"; // Importante para pegar o valor_sessao
-import { CreatePagamentoService } from "../../finance/services/CreatePagamentoService";
+import { Agendamento } from "../entities/Agendamento";
+import { Paciente } from "../../patients/entities/Paciente";
 
 interface IRequest {
     agendamento_id: number;
     paciente_id: number;
-    descricao: string;
-    procedimentos?: string;
+    subjetivo?: string;
+    objetivo?: string;
+    avaliacao?: string;
+    plano?: string;
     cid_10?: string;
     diagnostico_fisioterapeutico?: string;
     objetivos_tratamento?: string;
 }
 
 export class CreateEvolucaoService {
-    async execute(dados: IRequest) {
-        const evolucaoRepository = AppDataSource.getRepository(Evolucao);
-        const pacienteRepository = AppDataSource.getRepository(Paciente);
+    async execute(data: IRequest) {
+        const evolucaoRepo = AppDataSource.getRepository(Evolucao);
+        const agendamentoRepo = AppDataSource.getRepository(Agendamento);
+        const pacienteRepo = AppDataSource.getRepository(Paciente);
 
-        // 1. Criar e salvar a evolução clínica
-        const evolucao = evolucaoRepository.create(dados);
-        await evolucaoRepository.save(evolucao);
+        const paciente = await pacienteRepo.findOneBy({ id: data.paciente_id });
+        if (!paciente) {
+            throw new Error("Paciente não encontrado.");
+        }
 
-        // --- INÍCIO DA AUTOMAÇÃO FINANCEIRA ---
-        
-        // 2. Buscar o valor da sessão configurado no cadastro do paciente
-        const paciente = await pacienteRepository.findOneBy({ id: dados.paciente_id });
+        const agendamento = await agendamentoRepo.findOneBy({ id: data.agendamento_id });
+        if (!agendamento) {
+            throw new Error("Agendamento não encontrado.");
+        }
 
-        // 3. Chamar o serviço de pagamento para gerar a cobrança pendente
-        const createPagamento = new CreatePagamentoService();
-        await createPagamento.execute({
-            paciente_id: dados.paciente_id,
-            agendamento_id: dados.agendamento_id,
-            valor: paciente?.valor_sessao || 0, // Se não tiver valor, gera como 0 para ajuste manual
-            data_vencimento: new Date() // Vence no dia do atendimento
+        const evolucaoExistente = await evolucaoRepo.findOneBy({ agendamento_id: data.agendamento_id });
+        if (evolucaoExistente) {
+            throw new Error("Já existe um prontuário registado para esta consulta.");
+        }
+
+        const evolucao = evolucaoRepo.create({
+            agendamento_id: data.agendamento_id,
+            paciente_id: data.paciente_id,
+            subjetivo: data.subjetivo,
+            objetivo: data.objetivo,
+            avaliacao: data.avaliacao,
+            plano: data.plano,
+            cid_10: data.cid_10,
+            diagnostico_fisioterapeutico: data.diagnostico_fisioterapeutico,
+            objetivos_tratamento: data.objetivos_tratamento,
+            finalizada: false
         });
 
-        // --- FIM DA AUTOMAÇÃO FINANCEIRA ---
+        await evolucaoRepo.save(evolucao);
 
         return evolucao;
     }

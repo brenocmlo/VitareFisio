@@ -4,22 +4,28 @@ import { ListAgendamentosService } from "../services/ListAgendamentosService";
 import { RescheduleAgendamentoService } from "../services/RescheduleAgendamentoService";
 import { GenerateWhatsAppLinkService } from "../services/GenerateWhatsAppLinkService"; 
 import { UpdateAgendamentoStatusService } from "../services/UpdateAgendamentoStatusService";
-// Adicione este import lá no topo:
 import { CancelAgendamentoService } from "../services/CancelAgendamentoService";
+
 export class AgendamentoController {
     async create(req: Request, res: Response) {
         try {
-            // <-- clinica_id EXTRAÍDO AQUI
-            const { paciente_id, clinica_id, fisioterapeuta_id, data_hora, observacoes } = req.body;
-            
-            const createAgendamentoService = new CreateAgendamentoService();
+            const { 
+                paciente_id, 
+                data_hora, 
+                observacoes, 
+                clinica_id, 
+                fisioterapeuta_id 
+            } = req.body;
 
-            const agendamento = await createAgendamentoService.execute({
-                paciente_id,
-                clinica_id, // <-- PASSADO PARA O SERVICE
-                fisioterapeuta_id,
+            const createAgendamento = new CreateAgendamentoService();
+
+            const agendamento = await createAgendamento.execute({
+                paciente_id: Number(paciente_id),
                 data_hora,
-                observacoes
+                observacoes,
+                clinica_id: Number(clinica_id),
+                fisioterapeuta_id: Number(fisioterapeuta_id),
+                status: "agendado"
             });
 
             return res.status(201).json(agendamento);
@@ -28,16 +34,27 @@ export class AgendamentoController {
         }
     }
 
-    // ... os seus métodos index, update e generateReminder continuam IGUAIS aqui para baixo ...
     async index(req: Request, res: Response) {
         try {
-            const { fisioterapeuta_id } = req.query;
+            // --- CAPTURANDO OS NOVOS FILTROS DA URL ---
+            const { data, mes, ano, fisioterapeuta_id } = req.query;
+            
+            // Prioridade para o ID que vem na query, se não, usa o do usuário logado
+            const fisioId = fisioterapeuta_id ? Number(fisioterapeuta_id) : req.user?.id;
+
             const listAgendamentosService = new ListAgendamentosService();
-            const agendamentos = await listAgendamentosService.execute(
-                fisioterapeuta_id ? Number(fisioterapeuta_id) : undefined
-            );
+            
+            // Passamos o objeto completo com os filtros para o Service
+            const agendamentos = await listAgendamentosService.execute({
+                data: data as string,
+                mes: mes as string,
+                ano: ano as string,
+                fisioterapeuta_id: Number(fisioId)
+            });
+
             return res.status(200).json(agendamentos);
         } catch (error: any) {
+            console.error("❌ ERRO NO INDEX DE AGENDAMENTOS:", error);
             return res.status(400).json({ error: error.message });
         }
     }
@@ -67,7 +84,8 @@ export class AgendamentoController {
                 status
             });
             return res.status(200).json(agendamento);
-        } catch (error: any) {
+        }  catch (error: any) {
+            console.error("❌ ERRO NO STATUS:", error);
             return res.status(400).json({ error: error.message });
         }
     }
@@ -82,17 +100,17 @@ export class AgendamentoController {
             return res.status(400).json({ error: error.message });
         }
     }
+
     async delete(req: Request, res: Response) {
-    try {
-        const { id } = req.params;
-        
-        const cancelAgendamento = new CancelAgendamentoService();
-        await cancelAgendamento.execute(Number(id));
-        
-        // Retornamos 204 (No Content) que é o padrão para deleções bem sucedidas
+        try {
+            const { id } = req.params;
+            const cancelAgendamento = new CancelAgendamentoService();
+            await cancelAgendamento.execute(Number(id));
+            
             return res.status(204).send(); 
-     }  catch (error: any) {
+        } catch (error: any) {
+            console.error("❌ ERRO AO DELETAR:", error);
             return res.status(400).json({ error: error.message });
+        }
     }
-}
 }

@@ -35,9 +35,26 @@ export class GenerateProntuarioPDFService {
 
             // --- Evoluções ---
             evolucoes.forEach((ev) => {
+                const secoes = [
+                    { titulo: "Subjetivo", valor: ev.subjetivo },
+                    { titulo: "Objetivo", valor: ev.objetivo },
+                    { titulo: "Avaliação", valor: ev.avaliacao },
+                    { titulo: "Plano", valor: ev.plano },
+                    { titulo: "CID-10", valor: ev.cid_10 },
+                    { titulo: "Diagnóstico Fisioterapêutico", valor: ev.diagnostico_fisioterapeutico },
+                    { titulo: "Objetivos do Tratamento", valor: ev.objetivos_tratamento },
+                ].filter((secao) => Boolean(secao.valor));
+
                 doc.fillColor("blue").fontSize(10).text(`Sessão em: ${ev.data_criacao.toLocaleDateString("pt-BR")}`);
-                doc.fillColor("black").fontSize(12).text(`Descrição: ${ev.descricao}`);
-                if (ev.cid_10) doc.fontSize(10).text(`CID-10: ${ev.cid_10}`);
+                doc.fillColor("black");
+
+                if (secoes.length === 0) {
+                    doc.fontSize(12).text("Sem conteúdo clínico registrado.");
+                } else {
+                    secoes.forEach(({ titulo, valor }) => {
+                        doc.fontSize(11).text(`${titulo}: ${valor}`);
+                    });
+                }
                 
                 // Selo de Autenticidade
                 if (ev.finalizada) {

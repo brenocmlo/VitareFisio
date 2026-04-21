@@ -1,51 +1,30 @@
 import { AppDataSource } from "../../../data-source";
 import { Pagamento } from "../entities/Pagamento";
-import { Paciente } from "../../patients/entities/Paciente";
-import { Agendamento } from "../../appointments/entities/Agendamento";
+import { PacotePaciente } from "../../patients/entities/PacotePaciente";
+import { addDays } from "date-fns";
 
-interface IRequest {
-    paciente_id: number;
-    clinica_id: number;
-    agendamento_id?: number;
-    valor: number;
-    forma_pagamento: "pix" | "cartao_credito" | "cartao_debito" | "dinheiro" | "convenio";
-    status?: "pendente" | "pago" | "cancelado" | "estornado";
-    data_pagamento?: string;
-}
+export class CreateAgendamentoService {
+    async execute(data: any) {
+        const repo = AppDataSource.getRepository(Agendamentos);
 
-export class CreatePagamentoService {
-    async execute({ paciente_id, clinica_id, agendamento_id, valor, forma_pagamento, status = "pago", data_pagamento }: IRequest) {
-        const pagamentoRepo = AppDataSource.getRepository(Pagamento);
-        const pacienteRepo = AppDataSource.getRepository(Paciente);
-        
-        // 1. Validação básica
-        const paciente = await pacienteRepo.findOneBy({ id: paciente_id });
-        if (!paciente) {
-            throw new Error("Paciente não encontrado.");
+        // Converte a string "YYYY-MM-DD HH:mm:00" para o objeto Date do JavaScript
+        const dataConvertida = new Date(data.data_hora);
+
+        // Trava de segurança: Verifica se a data é válida
+        if (isNaN(dataConvertida.getTime())) {
+            throw new Error("Formato de data inválido recebido no servidor.");
         }
 
-        // 2. Se informou agendamento, verifica se ele existe
-        if (agendamento_id) {
-            const agendamentoRepo = AppDataSource.getRepository(Agendamento);
-            const agendamento = await agendamentoRepo.findOneBy({ id: agendamento_id });
-            if (!agendamento) {
-                throw new Error("Agendamento não encontrado.");
-            }
-        }
-
-        // 3. Criação do registro financeiro
-        const pagamento = pagamentoRepo.create({
-            paciente_id,
-            clinica_id,
-            agendamento_id,
-            valor,
-            forma_pagamento,
-            status,
-            data_pagamento: data_pagamento ? new Date(data_pagamento) : new Date()
+        const agendamento = repo.create({
+            paciente_id: data.paciente_id,
+            fisioterapeuta_id: data.fisioterapeuta_id,
+            clinica_id: data.clinica_id,
+            data_hora: dataConvertida, // Salva o objeto Date
+            observacoes: data.observacoes,
+            status: 'agendado'
         });
 
-        await pagamentoRepo.save(pagamento);
-
-        return pagamento;
+        await repo.save(agendamento);
+        return agendamento;
     }
 }
