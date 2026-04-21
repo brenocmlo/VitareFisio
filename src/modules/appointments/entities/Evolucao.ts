@@ -13,12 +13,20 @@ export class Evolucao {
     @Column()
     paciente_id: number;
 
-    @Column("text")
-    descricao: string;
+    // --- METODOLOGIA SOAP ---
+    @Column("text", { nullable: true })
+    subjetivo: string; // "Paciente relata que a dor piorou ao agachar"
 
     @Column("text", { nullable: true })
-    procedimentos: string;
-    
+    objetivo: string; // "Edema grau 2 em joelho D. ADM de flexão em 90 graus"
+
+    @Column("text", { nullable: true })
+    avaliacao: string; // "Melhora parcial do quadro. Boa evolução motora"
+
+    @Column("text", { nullable: true })
+    plano: string; // "Feito USG contínuo. Exercícios isométricos. Casa: Gelo 20min"
+
+    // --- AVALIAÇÃO INICIAL / CLINICA ---
     @Column({ nullable: true })
     cid_10: string;
 
@@ -27,6 +35,8 @@ export class Evolucao {
 
     @Column("text", { nullable: true })
     objetivos_tratamento: string;
+    
+    // --- SEGURANÇA E AUDITORIA ---
     @Column({ nullable: true })
     hash_integridade: string;
 

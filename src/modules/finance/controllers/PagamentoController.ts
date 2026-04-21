@@ -17,11 +17,23 @@ export class PagamentoController {
                 quantidade_sessoes
             } = req.body;
 
-            const createPagamento = new CreatePagamentoService();
+            // Resolução de clinica_id: tenta frontend → token → fallback 1 (autônomo)
+            let clinicaIdResolvido: number | undefined =
+                typeof clinica_id === "number" ? clinica_id : undefined;
 
-            const pagamento = await createPagamento.execute({
+            if (!clinicaIdResolvido && req.user) {
+                clinicaIdResolvido = req.user.clinica_id || Number(req.user.id);
+            }
+
+            if (!clinicaIdResolvido) {
+                clinicaIdResolvido = 1;
+            }
+
+            const createPagamentoService = new CreatePagamentoService();
+
+            const pagamento = await createPagamentoService.execute({
                 paciente_id,
-                clinica_id,
+                clinica_id: clinicaIdResolvido,
                 agendamento_id,
                 valor,
                 forma_pagamento,
@@ -33,16 +45,24 @@ export class PagamentoController {
 
             return res.status(201).json(pagamento);
         } catch (error: any) {
+            console.error("Erro ao registrar pagamento:", error.message);
             return res.status(400).json({ error: error.message });
         }
     }
 
     async index(req: Request, res: Response) {
         try {
+            let clinicaIdResolvido = req.user?.clinica_id || Number(req.user?.id);
+            if (!clinicaIdResolvido) {
+                clinicaIdResolvido = 1;
+            }
+
             const listPagamentosService = new ListPagamentosService();
-            const pagamentos = await listPagamentosService.execute();
+            const pagamentos = await listPagamentosService.execute(clinicaIdResolvido);
+
             return res.status(200).json(pagamentos);
         } catch (error: any) {
+            console.error("Erro na listagem financeira:", error.message);
             return res.status(400).json({ error: error.message });
         }
     }

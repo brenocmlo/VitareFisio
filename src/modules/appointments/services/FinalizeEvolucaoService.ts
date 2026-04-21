@@ -17,21 +17,30 @@ export class FinalizeEvolucaoService {
             throw new Error("Esta evolução já está assinada e congelada.");
         }
 
-        // Criamos uma string com os dados imutáveis para gerar o Hash
+        const conteudoClinico = [
+            evolucao.subjetivo,
+            evolucao.objetivo,
+            evolucao.avaliacao,
+            evolucao.plano,
+            evolucao.cid_10,
+            evolucao.diagnostico_fisioterapeutico,
+            evolucao.objetivos_tratamento,
+        ]
+            .filter(Boolean)
+            .join("|");
+
         const dadosParaHash = `
             ID:${evolucao.id}|
             Paciente:${evolucao.paciente_id}|
-            Descricao:${evolucao.descricao}|
+            Conteudo:${conteudoClinico}|
             Data:${evolucao.data_criacao.toISOString()}
         `;
 
-        // Geramos o Hash SHA-256
         const hash = crypto.createHash("sha256").update(dadosParaHash).digest("hex");
 
-        // Atualizamos os campos com os nomes EXATOS da Entity
         evolucao.finalizada = true;
         evolucao.hash_integridade = hash;
-        evolucao.data_finalizacao = new Date(); // Usando 'ç' aqui!
+        evolucao.data_finalizacao = new Date();
 
         await repo.save(evolucao);
 

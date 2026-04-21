@@ -10,8 +10,8 @@ interface IRequest {
     clinica_id: number;
     agendamento_id?: number;
     valor: number;
-    forma_pagamento: "pix" | "cartao_credito" | "cartao_debito" | "dinheiro" | "convenio";
-    status?: "pendente" | "pago" | "cancelado" | "estornado";
+    forma_pagamento: string; // recebido do frontend/schema como forma_pagamento
+    status?: "pago" | "pendente" | "atrasado";
     data_pagamento?: string;
     // Campos para ativação de Pacote de Sessões
     is_pacote?: boolean;
@@ -46,12 +46,13 @@ export class CreatePagamentoService {
         }
 
         // 1. Sempre registra o pagamento financeiro
+        // forma_pagamento → metodo_pagamento para compatibilidade com a entidade Pagamento
         const pagamento = pagamentoRepo.create({
             paciente_id,
             clinica_id,
             agendamento_id,
             valor,
-            forma_pagamento,
+            metodo_pagamento: forma_pagamento as any,
             status,
             data_pagamento: data_pagamento ? new Date(data_pagamento) : new Date()
         });

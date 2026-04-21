@@ -1,13 +1,15 @@
 import { AppDataSource } from "../../../data-source";
 import { Agendamento } from "../entities/Agendamento";
 import { Paciente } from "../../patients/entities/Paciente";
+import { Not } from "typeorm"; // Não esqueça de importar o Not
 
 interface IRequest {
     paciente_id: number;
-    clinica_id: number; 
+    clinica_id: number;
     fisioterapeuta_id: number;
-    data_hora: string; 
+    data_hora: string;
     observacoes?: string;
+    status?: string;
 }
 
 export class CreateAgendamentoService {
@@ -20,21 +22,25 @@ export class CreateAgendamentoService {
             throw new Error("Paciente não encontrado.");
         }
 
-        // --- A MÁGICA ACONTECE AQUI ---
-        // 1. Converte o texto recebido para Data (Início)
+        // 1. Normaliza a data para evitar erros de milissegundos
         const dataInicio = new Date(data_hora);
+        dataInicio.setSeconds(0);
+        dataInicio.setMilliseconds(0);
         
-        // 2. Calcula automaticamente a Data de Fim (+ 1 hora)
-        // 60 minutos * 60 segundos * 1000 milissegundos
         const dataFim = new Date(dataInicio.getTime() + 60 * 60 * 1000); 
-        // ------------------------------
 
-        const conflito = await agendamentoRepository.findOneBy({
-            data_hora: dataInicio
+        // 2. BUSCA DE CONFLITO (Ajustada para ser exata)
+        const conflito = await agendamentoRepository.findOne({
+            where: {
+                data_hora: dataInicio,
+                fisioterapeuta_id: Number(fisioterapeuta_id), // Filtra pelo seu ID
+                status: Not("cancelado") // Só dá conflito se NÃO estiver cancelado
+            }
         });
 
         if (conflito) {
-            throw new Error("Este horário já está ocupado por outro paciente.");
+            // Se cair aqui, o erro vai para o Frontend e o agendamento NÃO é criado
+            throw new Error("Este horário já está ocupado na sua agenda.");
         }
 
         const agendamento = agendamentoRepository.create({
@@ -42,7 +48,7 @@ export class CreateAgendamentoService {
             clinica_id,
             fisioterapeuta_id,
             data_hora: dataInicio,
-            data_hora_fim: dataFim, // <-- ENVIAMOS A DATA CALCULADA AQUI
+            data_hora_fim: dataFim,
             observacoes,
             status: "agendado" 
         });

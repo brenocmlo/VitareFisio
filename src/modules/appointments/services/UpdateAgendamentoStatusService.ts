@@ -59,7 +59,7 @@ export class UpdateAgendamentoStatusService {
                     agendamento_id: agendamento.id,
                     clinica_id: agendamento.clinica_id,
                     valor: 150.00, // TODO: substituir pelo valor configurável da clínica (P3)
-                    forma_pagamento: "pix",
+                    metodo_pagamento: "pix",
                     status: "pendente",
                     data_pagamento: new Date()
                 });
