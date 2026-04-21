@@ -5,7 +5,17 @@ import { ListPagamentosService } from "../services/ListPagamentosService";
 export class PagamentoController {
     async create(req: Request, res: Response) {
         try {
-            const { paciente_id, clinica_id, agendamento_id, valor, forma_pagamento, status, data_pagamento } = req.body;
+            const {
+                paciente_id,
+                clinica_id,
+                agendamento_id,
+                valor,
+                forma_pagamento,
+                status,
+                data_pagamento,
+                is_pacote,
+                quantidade_sessoes
+            } = req.body;
 
             const createPagamento = new CreatePagamentoService();
 
@@ -16,7 +26,9 @@ export class PagamentoController {
                 valor,
                 forma_pagamento,
                 status,
-                data_pagamento
+                data_pagamento,
+                is_pacote: Boolean(is_pacote),
+                quantidade_sessoes: quantidade_sessoes ? Number(quantidade_sessoes) : 1
             });
 
             return res.status(201).json(pagamento);
