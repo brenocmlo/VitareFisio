@@ -3,6 +3,15 @@ import { Agendamento } from "../entities/Agendamento";
 import { Paciente } from "../../patients/entities/Paciente";
 import { Not } from "typeorm"; // Não esqueça de importar o Not
 
+interface IRequest {
+    paciente_id: number;
+    clinica_id: number;
+    fisioterapeuta_id: number;
+    data_hora: string;
+    observacoes?: string;
+    status?: string;
+}
+
 export class CreateAgendamentoService {
     async execute({ paciente_id, clinica_id, fisioterapeuta_id, data_hora, observacoes }: IRequest): Promise<Agendamento> {
         const agendamentoRepository = AppDataSource.getRepository(Agendamento);

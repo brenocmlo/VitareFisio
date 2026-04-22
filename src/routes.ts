@@ -8,10 +8,11 @@ import { SessionsController } from "./modules/users/controllers/SessionsControll
 import { ClinicaController } from "./modules/clinics/controllers/ClinicaController";
 import { FisioterapeutaController } from "./modules/clinics/controllers/FisioterapeutaController";
 import { PacienteController } from "./modules/patients/controllers/PacienteController";
+import { PacoteController } from "./modules/patients/controllers/PacoteController";
 import { AgendamentoController } from "./modules/appointments/controllers/AgendamentoController";
 import { EvolucaoController } from "./modules/appointments/controllers/EvolucaoController";
 import { PagamentoController } from "./modules/finance/controllers/PagamentoController";
-import { DashboardController } from "./modules/clinics/controllers/DashboardController"; // <-- CORRIGIDO
+import { DashboardController } from "./modules/clinics/controllers/DashboardController";
 import { AnexoController } from "./modules/patients/controllers/AnexoController";
 import { AnamneseController } from "./modules/patients/controllers/AnamneseController";
 import { ReportController } from "./modules/clinics/controllers/ReportController";
@@ -38,6 +39,7 @@ const sessionsController = new SessionsController();
 const clinicaController = new ClinicaController();
 const fisioterapeutaController = new FisioterapeutaController();
 const pacienteController = new PacienteController();
+const pacoteController = new PacoteController();
 const agendamentoController = new AgendamentoController();
 const evolucaoController = new EvolucaoController();
 const pagamentoController = new PagamentoController();
@@ -63,15 +65,21 @@ routes.use(ensureAuthenticated);
 // --- GESTÃO DE CLÍNICA & EQUIPE ---
 routes.post("/fisioterapeutas", validateRequest(createFisioterapeutaSchema), fisioterapeutaController.create);
 routes.get("/fisioterapeutas", fisioterapeutaController.index);
-routes.get("/dashboard", dashboardController.getMetrics); // <-- CORRIGIDO
+routes.get("/dashboard", dashboardController.getMetrics);
 
-// --- PACIENTES E ANAMNESE ---
+// --- PACIENTES ---
 routes.post("/pacientes", validateRequest(createPacienteSchema), pacienteController.create);
 routes.get("/pacientes", pacienteController.index);
-routes.get("/pacientes/:id", pacienteController.show); // <-- LINHA NOVA AQUI!
+routes.get("/pacientes/:id", pacienteController.show);
+
+// --- ANAMNESE ---
 routes.post("/pacientes/:paciente_id/anamnese", anamneseController.createOrUpdate);
 routes.get("/pacientes/:paciente_id/anamnese", anamneseController.show);
-// --- ANEXOS E DOCUMENTOS DO PACIENTE ---
+
+// --- PACOTES DE SESSÕES ---
+routes.get("/pacientes/:paciente_id/pacotes", pacoteController.index);
+
+// --- ANEXOS E DOCUMENTOS ---
 routes.post("/pacientes/:paciente_id/anexos", upload.single("documento"), anexoController.create);
 routes.get("/anexos/:id", anexoController.show);
 
@@ -96,7 +104,6 @@ routes.get("/pagamentos", pagamentoController.index);
 routes.get("/pacientes/:paciente_id/relatorio", reportController.exportProntuario);
 
 // --- COMUNICAÇÃO ---
-// Gerar link de WhatsApp para o lembrete da sessão
 routes.get("/agendamentos/:id/lembrete", agendamentoController.generateReminder);
 
 export { routes };

@@ -5,27 +5,28 @@ import { ListPagamentosService } from "../services/ListPagamentosService";
 export class PagamentoController {
     async create(req: Request, res: Response) {
         try {
-            const { 
-                paciente_id, 
-                valor, 
-                forma_pagamento, 
-                agendamento_id, 
-                is_pacote, 
-                quantidade_sessoes,
-                clinica_id // <--- Adicionamos aqui para o caso do frontend enviar
+            const {
+                paciente_id,
+                clinica_id,
+                agendamento_id,
+                valor,
+                forma_pagamento,
+                status,
+                data_pagamento,
+                is_pacote,
+                quantidade_sessoes
             } = req.body;
-            
-            // --- O SEGREDO ESTÁ AQUI ---
-            // Tenta usar o clinica_id do Frontend. Se não vier, tenta do Token. Se falhar, usa 1 (Padrão para Autônomos).
+
+            // Resolução de clinica_id: tenta frontend → token → fallback 1 (autônomo)
             let clinicaIdResolvido: number | undefined =
                 typeof clinica_id === "number" ? clinica_id : undefined;
-            
+
             if (!clinicaIdResolvido && req.user) {
-                clinicaIdResolvido = req.user.clinica_id || Number(req.user.id); 
+                clinicaIdResolvido = req.user.clinica_id || Number(req.user.id);
             }
-            
+
             if (!clinicaIdResolvido) {
-                clinicaIdResolvido = 1; 
+                clinicaIdResolvido = 1;
             }
 
             const createPagamentoService = new CreatePagamentoService();
@@ -33,11 +34,13 @@ export class PagamentoController {
             const pagamento = await createPagamentoService.execute({
                 paciente_id,
                 clinica_id: clinicaIdResolvido,
+                agendamento_id,
                 valor,
                 forma_pagamento,
-                agendamento_id,
-                is_pacote,
-                quantidade_sessoes
+                status,
+                data_pagamento,
+                is_pacote: Boolean(is_pacote),
+                quantidade_sessoes: quantidade_sessoes ? Number(quantidade_sessoes) : 1
             });
 
             return res.status(201).json(pagamento);
@@ -51,7 +54,7 @@ export class PagamentoController {
         try {
             let clinicaIdResolvido = req.user?.clinica_id || Number(req.user?.id);
             if (!clinicaIdResolvido) {
-                clinicaIdResolvido = 1; 
+                clinicaIdResolvido = 1;
             }
 
             const listPagamentosService = new ListPagamentosService();

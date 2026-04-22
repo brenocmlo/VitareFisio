@@ -5,49 +5,44 @@ import { AppDataSource } from "../../../data-source";
 import { Paciente } from "../entities/Paciente";
 
 export class PacienteController {
-    
-    // 1. MÉTODO DE CRIAÇÃO (POST)
+
+    // POST /pacientes
     async create(req: Request, res: Response) {
         try {
-            // O req.body já vem validado pelo middleware do Zod
             const data = req.body;
             const createPacienteService = new CreatePacienteService();
             const paciente = await createPacienteService.execute(data);
-
             return res.status(201).json(paciente);
         } catch (error: any) {
             return res.status(400).json({ error: error.message });
         }
     }
 
-    // 2. MÉTODO DE LISTAGEM (GET) com filtro de Clínica
+    // GET /pacientes
     async index(req: Request, res: Response) {
         try {
-            // Filtro opcional por ID da clínica: /pacientes?clinica_id=1
             const { clinica_id } = req.query;
-
             const listPacientesService = new ListPacientesService();
-            
-            // Passamos o filtro para o Service de listagem
             const pacientes = await listPacientesService.execute(
                 clinica_id ? Number(clinica_id) : undefined
             );
-
             return res.status(200).json(pacientes);
         } catch (error: any) {
             return res.status(400).json({ error: error.message });
         }
     }
 
-    // 3. NOVO MÉTODO: Exibir um paciente específico (GET /pacientes/:id)
+    // GET /pacientes/:id
     async show(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            
+            const { clinica_id } = req.user as any;
+
             const pacienteRepo = AppDataSource.getRepository(Paciente);
-            
-            // Procura o paciente pelo ID
-            const paciente = await pacienteRepo.findOneBy({ id: Number(id) });
+            const paciente = await pacienteRepo.findOneBy({
+                id: Number(id),
+                clinica_id: Number(clinica_id)
+            });
 
             if (!paciente) {
                 return res.status(404).json({ error: "Paciente não encontrado." });

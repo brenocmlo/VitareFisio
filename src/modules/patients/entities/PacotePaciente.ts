@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from "typeorm";
-import { Paciente } from "./Paciente"; // Ajuste o caminho se necessário
+import { Paciente } from "./Paciente";
 
 @Entity("pacotes_pacientes")
 export class PacotePaciente {
@@ -10,25 +10,28 @@ export class PacotePaciente {
     paciente_id: number;
 
     @Column()
-    modelo_id: number; // Pode referenciar uma tabela 'modelos_pacotes' no futuro
+    clinica_id: number;
 
-    @CreateDateColumn()
-    data_compra: Date;
+    @Column("int")
+    sessoes_total: number;
 
     @Column("int")
     sessoes_restantes: number;
 
-    @Column({ type: "date" })
+    @Column({ type: "date", nullable: true })
     data_validade: Date;
 
-    @Column({ 
-        type: "enum", 
-        enum: ['pendente', 'pago', 'cancelado'], 
-        default: 'pendente' 
+    @Column({
+        type: "enum",
+        enum: ["pendente", "pago", "cancelado"],
+        default: "pendente"
     })
     status_pagamento: string;
 
-    // Relacionamento (Opcional, mas muito útil)
+    @CreateDateColumn()
+    data_compra: Date;
+
+    // Relacionamento para joins
     @ManyToOne(() => Paciente)
     @JoinColumn({ name: "paciente_id" })
     paciente: Paciente;
