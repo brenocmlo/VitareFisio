@@ -4,6 +4,7 @@ import { verify } from "jsonwebtoken";
 interface TokenPayload {
     sub: string;
     clinica_id: number;
+    tipo: string; // <-- ADICIONADO
     iat: number;
     exp: number;
 }
@@ -14,6 +15,7 @@ declare global {
             user?: {
                 id: string;
                 clinica_id: number;
+                tipo: string; // <-- ADICIONADO
             };
         }
     }
@@ -42,6 +44,7 @@ export function ensureAuthenticated(
         req.user = {
             id: decoded.sub,
             clinica_id: decoded.clinica_id,
+            tipo: decoded.tipo, // <-- ADICIONADO: Repassa para todas as rotas
         };
 
         return next();
