@@ -81,7 +81,9 @@ routes.get("/pacientes/:paciente_id/pacotes", pacoteController.index);
 
 // --- ANEXOS E DOCUMENTOS ---
 routes.post("/pacientes/:paciente_id/anexos", upload.single("documento"), anexoController.create);
+routes.get("/pacientes/:paciente_id/anexos", anexoController.index);
 routes.get("/anexos/:id", anexoController.show);
+routes.delete("/anexos/:id", anexoController.delete);
 
 // --- AGENDA E ATENDIMENTOS ---
 routes.post("/agendamentos", validateRequest(createAgendamentoSchema), agendamentoController.create);
