@@ -1,6 +1,10 @@
 import { AppDataSource } from "../../../data-source";
 import { Agendamento } from "../entities/Agendamento";
 import { Paciente } from "../../patients/entities/Paciente";
+import {
+    formatAppointmentDate,
+    formatAppointmentTime,
+} from "../utils/appointmentDateTime";
 
 export class GenerateWhatsAppLinkService {
     async execute(agendamento_id: number) {
@@ -24,8 +28,8 @@ export class GenerateWhatsAppLinkService {
         }
 
         // 3. Formata a Data e Hora para o padrão brasileiro/português
-        const dataFormatada = agendamento.data_hora.toLocaleDateString("pt-BR");
-        const horaFormatada = agendamento.data_hora.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' });
+        const dataFormatada = formatAppointmentDate(agendamento.data_hora);
+        const horaFormatada = formatAppointmentTime(agendamento.data_hora);
 
         // 4. Montagem da mensagem humanizada
         const mensagem = `Olá, ${paciente.nome}! 🏥\n\nAqui é da VitareFisio. Estamos a passar para lembrar da sua sessão de fisioterapia agendada para o dia *${dataFormatada}* às *${horaFormatada}*.\n\nPor favor, responda "SIM" para confirmar ou "NÃO" caso precise de reagendar.`;

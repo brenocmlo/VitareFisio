@@ -3,6 +3,11 @@ import { Agendamento } from "../../appointments/entities/Agendamento";
 import { Paciente } from "../../patients/entities/Paciente";
 import { Pagamento } from "../../finance/entities/Pagamento"; // <-- Importe o Pagamento
 import { Between, In } from "typeorm";
+import {
+    getAppointmentDayBounds,
+    getAppointmentMonthBounds,
+    getCurrentAppointmentDateTime,
+} from "../../appointments/utils/appointmentDateTime";
 
 export class GetDashboardMetricsService {
     async execute(clinica_id: number) {
@@ -11,13 +16,17 @@ export class GetDashboardMetricsService {
         const pagamentoRepo = AppDataSource.getRepository(Pagamento); // <-- Novo repositório
 
         // --- 1. DATAS DE REFERÊNCIA ---
-        const hoje = new Date();
-        const inicioDoDia = new Date(hoje.setHours(0, 0, 0, 0));
-        const fimDoDia = new Date(hoje.setHours(23, 59, 59, 999));
-        
-        const data = new Date();
-        const primeiroDiaDoMes = new Date(data.getFullYear(), data.getMonth(), 1);
-        const ultimoDiaDoMes = new Date(data.getFullYear(), data.getMonth() + 1, 0, 23, 59, 59, 999);
+        const agoraLocal = getCurrentAppointmentDateTime();
+        const hojeLocal = agoraLocal.slice(0, 10);
+        const anoAtual = Number(hojeLocal.slice(0, 4));
+        const mesAtualIndex = Number(hojeLocal.slice(5, 7)) - 1;
+        const [inicioDoDia, fimDoDia] = getAppointmentDayBounds(hojeLocal);
+        const [primeiroDiaDoMes, ultimoDiaDoMes] = getAppointmentMonthBounds(
+            hojeLocal.slice(5, 7),
+            hojeLocal.slice(0, 4)
+        );
+        const primeiroDiaPagamentoMes = new Date(anoAtual, mesAtualIndex, 1);
+        const ultimoDiaPagamentoMes = new Date(anoAtual, mesAtualIndex + 1, 0, 23, 59, 59, 999);
 
         // --- 2. MÉTRICAS GERAIS ---
         const totalPacientes = await pacienteRepo.count();
@@ -28,7 +37,7 @@ export class GetDashboardMetricsService {
         });
 
         const proximosAtendimentos = await agendamentoRepo.find({
-            where: { clinica_id, data_hora: Between(new Date(), fimDoDia), status: In(["agendado", "confirmado"]) },
+            where: { clinica_id, data_hora: Between(agoraLocal, fimDoDia), status: In(["agendado", "confirmado"]) },
             order: { data_hora: "ASC" },
             take: 5
         });
@@ -52,7 +61,7 @@ export class GetDashboardMetricsService {
         const totalFaturamento = await pagamentoRepo.sum("valor", {
             clinica_id,
             status: "pago",
-            data_pagamento: Between(primeiroDiaDoMes, ultimoDiaDoMes)
+            data_pagamento: Between(primeiroDiaPagamentoMes, ultimoDiaPagamentoMes)
         });
 
         return {

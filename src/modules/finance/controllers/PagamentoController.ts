@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { CreatePagamentoService } from "../services/CreatePagamentoService";
 import { ListPagamentosService } from "../services/ListPagamentosService";
+import { DeletePagamentoService } from "../services/DeletePagamentoService";
 
 export class PagamentoController {
     async create(req: Request, res: Response) {
@@ -64,6 +65,41 @@ export class PagamentoController {
         } catch (error: any) {
             console.error("Erro na listagem financeira:", error.message);
             return res.status(400).json({ error: error.message });
+        }
+    }
+
+    async delete(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const clinica_id = req.user?.clinica_id || Number(req.user?.id) || 1;
+            const user_id = req.user?.id;
+
+            // Validar se o ID é válido
+            if (!id || isNaN(Number(id))) {
+                return res.status(400).json({ error: "ID inválido." });
+            }
+
+            const deletePagamentoService = new DeletePagamentoService();
+            const resultado = await deletePagamentoService.execute({
+                id: Number(id),
+                clinica_id: Number(clinica_id),
+                user_id: user_id as string
+            });
+
+            return res.status(200).json({
+                message: "Lançamento removido com sucesso.",
+                id: resultado.id
+            });
+        } catch (error: any) {
+            console.error("Erro ao remover pagamento:", error.message);
+
+            // Erro 404: Não encontrado
+            if (error.message.includes("não encontrado")) {
+                return res.status(404).json({ error: error.message });
+            }
+
+            // Erro 500: Genérico
+            return res.status(500).json({ error: "Erro ao remover lançamento." });
         }
     }
 }

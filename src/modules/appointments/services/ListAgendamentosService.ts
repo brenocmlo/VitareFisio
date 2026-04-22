@@ -1,7 +1,11 @@
 import { AppDataSource } from "../../../data-source";
 import { Agendamento } from "../entities/Agendamento";
 import { Between } from "typeorm";
-import { startOfDay, endOfDay, startOfMonth, endOfMonth } from "date-fns";
+import {
+  getAppointmentDayBounds,
+  getAppointmentMonthBounds,
+  getCurrentAppointmentDateTime,
+} from "../utils/appointmentDateTime";
 
 interface IRequest {
   data?: string;
@@ -14,23 +18,16 @@ export class ListAgendamentosService {
   async execute({ data, mes, ano, fisioterapeuta_id }: IRequest) {
     const agendamentoRepo = AppDataSource.getRepository(Agendamento);
 
-    let dataInicio: Date;
-    let dataFim: Date;
+    let dataInicio: string;
+    let dataFim: string;
 
     if (mes && ano) {
-      // Filtro por Mês Inteiro
-      const dataReferencia = new Date(Number(ano), Number(mes) - 1, 1);
-      dataInicio = startOfMonth(dataReferencia);
-      dataFim = endOfMonth(dataReferencia);
+      [dataInicio, dataFim] = getAppointmentMonthBounds(mes, ano);
     } else if (data) {
-      // Filtro por Dia Específico
-      const dataReferencia = new Date(data);
-      dataInicio = startOfDay(dataReferencia);
-      dataFim = endOfDay(dataReferencia);
+      [dataInicio, dataFim] = getAppointmentDayBounds(data);
     } else {
-      // Default: Hoje
-      dataInicio = startOfDay(new Date());
-      dataFim = endOfDay(new Date());
+      const hojeLocal = getCurrentAppointmentDateTime().slice(0, 10);
+      [dataInicio, dataFim] = getAppointmentDayBounds(hojeLocal);
     }
 
     const agendamentos = await agendamentoRepo.find({

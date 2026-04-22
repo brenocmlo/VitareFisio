@@ -9,17 +9,25 @@ import {
 import { Paciente } from "../../patients/entities/Paciente";
 // 1. Importamos a entidade de Pacote
 import { PacotePaciente } from "../../patients/entities/PacotePaciente";
+import { appointmentDateTimeTransformer } from "../utils/appointmentDateTime";
 
 @Entity("agendamentos")
 export class Agendamento {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ name: "data_hora_inicio", type: "datetime" })
-    data_hora: Date;
+    @Column({
+        name: "data_hora_inicio",
+        type: "datetime",
+        transformer: appointmentDateTimeTransformer,
+    })
+    data_hora: string;
 
-    @Column()
-    data_hora_fim: Date;
+    @Column({
+        type: "datetime",
+        transformer: appointmentDateTimeTransformer,
+    })
+    data_hora_fim: string;
     
     @Column({ 
         type: "enum", 

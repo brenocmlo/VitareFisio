@@ -2,6 +2,10 @@ import { AppDataSource } from "../../../data-source";
 import { Agendamento } from "../entities/Agendamento";
 import { Paciente } from "../../patients/entities/Paciente";
 import { Not } from "typeorm"; // Não esqueça de importar o Not
+import {
+    addMinutesToAppointmentDateTime,
+    normalizeAppointmentDateTime,
+} from "../utils/appointmentDateTime";
 
 interface IRequest {
     paciente_id: number;
@@ -22,12 +26,9 @@ export class CreateAgendamentoService {
             throw new Error("Paciente não encontrado.");
         }
 
-        // 1. Normaliza a data para evitar erros de milissegundos
-        const dataInicio = new Date(data_hora);
-        dataInicio.setSeconds(0);
-        dataInicio.setMilliseconds(0);
-        
-        const dataFim = new Date(dataInicio.getTime() + 60 * 60 * 1000); 
+        // A agenda é tratada como horário local da clínica, sem conversão de timezone.
+        const dataInicio = normalizeAppointmentDateTime(data_hora);
+        const dataFim = addMinutesToAppointmentDateTime(dataInicio, 60);
 
         // 2. BUSCA DE CONFLITO (Ajustada para ser exata)
         const conflito = await agendamentoRepository.findOne({

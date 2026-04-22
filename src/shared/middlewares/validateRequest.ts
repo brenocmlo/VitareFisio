@@ -4,7 +4,7 @@ import { ZodSchema, ZodError } from "zod";
 export const validateRequest = (schema: ZodSchema) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
-            await schema.parseAsync(req.body);
+            req.body = await schema.parseAsync(req.body);
             next(); // Passa para o Controller
         } catch (error: any) { // <-- MÁGICA 1: Avisamos que o erro pode ser qualquer coisa
             if (error instanceof ZodError) {

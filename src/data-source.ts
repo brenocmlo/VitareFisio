@@ -15,6 +15,11 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_NAME || "vitarefisio_db",
     synchronize: true,
     logging: true,
+    extra: {
+        // Para horários da agenda, precisamos ler DATETIME como texto e evitar
+        // que o driver aplique conversões implícitas de timezone.
+        dateStrings: ["DATETIME"],
+    },
     entities: ["src/modules/**/entities/*.ts"],
     migrations: ["src/shared/infra/typeorm/migrations/*.ts"],
     subscribers: [],

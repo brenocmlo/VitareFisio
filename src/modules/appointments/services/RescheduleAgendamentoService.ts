@@ -1,6 +1,10 @@
 import { AppDataSource } from "../../../data-source";
 import { Agendamento } from "../entities/Agendamento";
 import { Between, Not } from "typeorm";
+import {
+    addMinutesToAppointmentDateTime,
+    normalizeAppointmentDateTime,
+} from "../utils/appointmentDateTime";
 
 interface IRequest {
     agendamento_id: number;
@@ -17,18 +21,17 @@ export class RescheduleAgendamentoService {
             throw new Error("Agendamento não encontrado.");
         }
 
-        const dataAgendamento = new Date(nova_data_hora);
+        const dataAgendamento = normalizeAppointmentDateTime(nova_data_hora);
 
         // 2. Verificar conflito de horário (considerando margem de 1h)
-        const dataInicio = new Date(dataAgendamento);
-        dataInicio.setMinutes(dataInicio.getMinutes() - 59);
-        const dataFim = new Date(dataAgendamento);
-        dataFim.setMinutes(dataFim.getMinutes() + 59);
+        const dataInicio = addMinutesToAppointmentDateTime(dataAgendamento, -59);
+        const dataFim = addMinutesToAppointmentDateTime(dataAgendamento, 59);
 
         const conflito = await agendamentoRepository.findOne({
             where: {
                 id: Not(agendamento_id), // Ignora o próprio agendamento na verificação
                 fisioterapeuta_id: agendamento.fisioterapeuta_id,
+                status: Not("cancelado"),
                 data_hora: Between(dataInicio, dataFim)
             }
         });
@@ -39,6 +42,7 @@ export class RescheduleAgendamentoService {
 
         // 3. Atualizar data e resetar status
         agendamento.data_hora = dataAgendamento;
+        agendamento.data_hora_fim = addMinutesToAppointmentDateTime(dataAgendamento, 60);
         agendamento.status = "agendado"; 
 
         await agendamentoRepository.save(agendamento);

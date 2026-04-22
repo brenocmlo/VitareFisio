@@ -71,6 +71,7 @@ routes.get("/dashboard", dashboardController.getMetrics);
 routes.post("/pacientes", validateRequest(createPacienteSchema), pacienteController.create);
 routes.get("/pacientes", pacienteController.index);
 routes.get("/pacientes/:id", pacienteController.show);
+routes.delete("/pacientes/:id", pacienteController.delete);
 
 // --- ANAMNESE ---
 routes.post("/pacientes/:paciente_id/anamnese", anamneseController.createOrUpdate);
@@ -101,6 +102,7 @@ routes.patch("/evolucoes/:id/finalizar", evolucaoController.finalize);
 // --- FINANCEIRO ---
 routes.post("/pagamentos", validateRequest(createPagamentoSchema), pagamentoController.create);
 routes.get("/pagamentos", pagamentoController.index);
+routes.delete("/pagamentos/:id", pagamentoController.delete);
 
 // --- RELATÓRIOS ---
 routes.get("/pacientes/:paciente_id/relatorio", reportController.exportProntuario);
