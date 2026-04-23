@@ -1,3 +1,17 @@
 node_modules/
 seed/
 *.env
+# Segurança: Nunca subir as credenciais
+.env
+.env.local
+.env.test
+
+# Dependências
+node_modules/
+dist/
+build/
+
+# Logs e arquivos de sistema
+npm-debug.log*
+yarn-error.log*
+.DS_Store

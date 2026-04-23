@@ -27,10 +27,10 @@ export class Anamnese {
     @Column("text", { nullable: true })
     observacoes: string;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: "timestamp" })
     data_criacao: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ type: "timestamp" })
     data_atualizacao: Date;
 
     @ManyToOne(() => Paciente)

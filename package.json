@@ -12,7 +12,9 @@
   
     
   "dev": "ts-node-dev --inspect --transpile-only --ignore-watch node_modules src/server.ts",
-  "test": "node -r ts-node/register/transpile-only --test test/**/*.test.js"
+  
+    
+  "typeorm": "typeorm-ts-node-commonjs"
   
   },
   
@@ -46,6 +48,9 @@
   "dependencies": {
   
     
+  "@supabase/supabase-js": "^2.104.1",
+  
+    
   "bcryptjs": "^3.0.3",
   
     
@@ -71,6 +76,9 @@
   
     
   "pdfkit": "^0.18.0",
+  
+    
+  "pg": "^8.20.0",
   
     
   "reflect-metadata": "^0.2.2",

@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from "typeorm";
-import { Clinica } from "../../clinics/entities/Clinica"; // Certifique-se de que o caminho está correto
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
 
 @Entity("pacientes")
 export class Paciente {
@@ -15,20 +14,18 @@ export class Paciente {
     @Column({ unique: true })
     cpf: string;
 
-    @Column({ nullable: true })
+    @Column({ type: "date", nullable: true }) // No Postgres usamos 'date' para aniversários
     data_nascimento: Date;
 
-    // AQUI O SEGREDO: Mude de 'telefone' para 'contato_whatsapp'
     @Column({ nullable: true })
     contato_whatsapp: string;
 
-    // AQUI TAMBÉM: Mude de 'endereco' para 'endereco_completo'
     @Column("text", { nullable: true })
     endereco_completo: string;
 
     @Column("decimal", { precision: 10, scale: 2, nullable: true })
     valor_sessao: number;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: "timestamp" })
     data_criacao: Date;
 }

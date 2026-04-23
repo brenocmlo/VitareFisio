@@ -1,5 +1,4 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
-import { hash } from "bcryptjs";
 
 @Entity("usuarios")
 export class Usuario {
@@ -8,13 +7,14 @@ export class Usuario {
 
     @Column()
     nome: string;
+
     @Column({ unique: true })
     cpf: string;
 
     @Column({ unique: true })
     email: string;
 
-    @Column({ select: false }) // A senha não virá em buscas comuns por segurança
+    @Column({ select: false })
     senha: string;
 
     @Column()
@@ -23,6 +23,6 @@ export class Usuario {
     @Column({ type: "enum", enum: ["admin", "fisioterapeuta", "recepcao"] })
     tipo: string;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: "timestamp" })
     data_criacao: Date;
 }

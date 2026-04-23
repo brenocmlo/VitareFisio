@@ -12,10 +12,10 @@ export class PacotePaciente {
     @Column()
     clinica_id: number;
 
-    @Column("int")
+    @Column("integer") // Ajustado para Postgres
     sessoes_total: number;
 
-    @Column("int")
+    @Column("integer") // Ajustado para Postgres
     sessoes_restantes: number;
 
     @Column({ type: "date", nullable: true })
@@ -28,10 +28,9 @@ export class PacotePaciente {
     })
     status_pagamento: string;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: "timestamp" })
     data_compra: Date;
 
-    // Relacionamento para joins
     @ManyToOne(() => Paciente)
     @JoinColumn({ name: "paciente_id" })
     paciente: Paciente;

@@ -20,6 +20,6 @@ export class Clinica {
     @Column("text", { nullable: true })
     endereco: string;
 
-    @CreateDateColumn()
+    @Column({ type: "timestamp" })
     data_criacao: Date;
 }

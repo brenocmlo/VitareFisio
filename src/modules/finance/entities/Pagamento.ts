@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from "typeorm";
 import { Paciente } from "../../patients/entities/Paciente";
 import { Agendamento } from "../../appointments/entities/Agendamento";
-import { Clinica } from "../../clinics/entities/Clinica"; // Importe a entidade Clinica se houver
 
 @Entity("pagamentos")
 export class Pagamento {
@@ -14,7 +13,6 @@ export class Pagamento {
     @Column({ nullable: true })
     agendamento_id: number;
 
-    // Adicionando clinica_id para o dashboard financeiro filtrar por unidade
     @Column()
     clinica_id: number;
 
@@ -27,7 +25,6 @@ export class Pagamento {
     @Column({ default: "pendente" })
     status: "pago" | "pendente" | "atrasado";
 
-    // AJUSTE AQUI: nullable: true resolve o erro 1292 do MySQL
     @Column({ type: "date", nullable: true })
     data_vencimento: Date;
 
@@ -42,6 +39,6 @@ export class Pagamento {
     @JoinColumn({ name: "agendamento_id" })
     agendamento: Agendamento;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: "timestamp" })
     created_at: Date;
 }

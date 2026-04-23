@@ -13,20 +13,18 @@ export class Evolucao {
     @Column()
     paciente_id: number;
 
-    // --- METODOLOGIA SOAP ---
     @Column("text", { nullable: true })
-    subjetivo: string; // "Paciente relata que a dor piorou ao agachar"
+    subjetivo: string;
 
     @Column("text", { nullable: true })
-    objetivo: string; // "Edema grau 2 em joelho D. ADM de flexão em 90 graus"
+    objetivo: string;
 
     @Column("text", { nullable: true })
-    avaliacao: string; // "Melhora parcial do quadro. Boa evolução motora"
+    avaliacao: string;
 
     @Column("text", { nullable: true })
-    plano: string; // "Feito USG contínuo. Exercícios isométricos. Casa: Gelo 20min"
+    plano: string;
 
-    // --- AVALIAÇÃO INICIAL / CLINICA ---
     @Column({ nullable: true })
     cid_10: string;
 
@@ -36,17 +34,16 @@ export class Evolucao {
     @Column("text", { nullable: true })
     objetivos_tratamento: string;
     
-    // --- SEGURANÇA E AUDITORIA ---
     @Column({ nullable: true })
     hash_integridade: string;
 
     @Column({ default: false })
     finalizada: boolean;
 
-    @Column({ nullable: true })
+    @Column({ type: "timestamp", nullable: true }) // Ajustado
     data_finalizacao: Date;
     
-    @CreateDateColumn()
+    @CreateDateColumn({ type: "timestamp" }) // Garantindo timestamp no Postgres
     data_criacao: Date;
 
     @ManyToOne(() => Agendamento)

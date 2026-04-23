@@ -1,26 +1,21 @@
 import "reflect-metadata";
+import * as dotenv from 'dotenv';
+import path from 'path';
+
+// O arquivo .env está uma pasta acima de 'src', na raiz do projeto
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') }); 
+
 import { DataSource } from "typeorm";
-import dotenv from "dotenv";
 
-// Carrega as variáveis do arquivo .env
-dotenv.config();
+console.log("Conectando na URL:", process.env.DATABASE_URL); // Agora deve imprimir a URL real no terminal
 
-// Exporta exatamente com o nome que o server.ts está procurando
 export const AppDataSource = new DataSource({
-    type: "mysql",
-    host: process.env.DB_HOST || "localhost",
-    port: Number(process.env.DB_PORT) || 3306,
-    username: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "1206", // <-- Coloque sua senha do MySQL se o .env falhar
-    database: process.env.DB_NAME || "vitarefisio_db",
-    synchronize: true,
-    logging: true,
-    extra: {
-        // Para horários da agenda, precisamos ler DATETIME como texto e evitar
-        // que o driver aplique conversões implícitas de timezone.
-        dateStrings: ["DATETIME"],
+    type: "postgres",
+    url: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false,
     },
+    synchronize: false,
     entities: ["src/modules/**/entities/*.ts"],
-    migrations: ["src/shared/infra/typeorm/migrations/*.ts"],
-    subscribers: [],
+    migrations: ["src/shared/migrations/*.ts"],
 });
