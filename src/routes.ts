@@ -1,6 +1,5 @@
 import { Router } from "express";
 import multer from "multer";
-import uploadConfig from "./config/upload";
 
 // --- CONTROLLERS ---
 import { UserController } from "./modules/users/controllers/UserController";
@@ -34,7 +33,13 @@ import { createPagamentoSchema } from "./modules/finance/schemas/createPagamento
 import { createAutonomoSchema } from "./modules/clinics/schemas/createAutonomoSchema";
 
 const routes = Router();
-const upload = multer(uploadConfig);
+
+/**
+ * CONFIGURAÇÃO DO MULTER:
+ * Alterado para memoryStorage para que o buffer do arquivo fique disponível
+ * para o upload direto para o Supabase Storage.
+ */
+const upload = multer({ storage: multer.memoryStorage() });
 
 // --- INSTÂNCIAS ---
 const userController = new UserController();
@@ -92,8 +97,14 @@ routes.patch("/evolucoes/:id/finalizar", checkRole(["admin", "fisioterapeuta"]),
 // --- PACOTES DE SESSÕES ---
 routes.get("/pacientes/:paciente_id/pacotes", checkRole(["admin", "fisioterapeuta", "recepcao"]), pacoteController.index);
 
-// --- ANEXOS E DOCUMENTOS ---
-routes.post("/pacientes/:paciente_id/anexos", checkRole(["admin", "fisioterapeuta", "recepcao"]), upload.single("documento"), anexoController.create);
+// --- ANEXOS E DOCUMENTOS (SUPABASE STORAGE) ---
+// O campo no FormData do Frontend deve chamar-se "documento"
+routes.post(
+    "/pacientes/:paciente_id/anexos", 
+    checkRole(["admin", "fisioterapeuta", "recepcao"]), 
+    upload.single("documento"), 
+    anexoController.create
+);
 routes.get("/pacientes/:paciente_id/anexos", checkRole(["admin", "fisioterapeuta", "recepcao"]), anexoController.index);
 routes.get("/anexos/:id", checkRole(["admin", "fisioterapeuta", "recepcao"]), anexoController.show);
 routes.delete("/anexos/:id", checkRole(["admin", "fisioterapeuta"]), anexoController.delete);
@@ -102,7 +113,6 @@ routes.delete("/anexos/:id", checkRole(["admin", "fisioterapeuta"]), anexoContro
 routes.post("/agendamentos", checkRole(["admin", "fisioterapeuta", "recepcao"]), validateRequest(createAgendamentoSchema), agendamentoController.create);
 routes.patch("/agendamentos/:id/reagendar", checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.update);
 routes.patch("/agendamentos/:id/status", checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.updateStatus);
-// NOVA ROTA AQUI:
 routes.patch("/agendamentos/:id/cancelar", checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.cancel); 
 routes.get("/agendamentos", checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.index);
 routes.get("/agendamentos/:id/lembrete", checkRole(["admin", "recepcao", "fisioterapeuta"]), agendamentoController.generateReminder);

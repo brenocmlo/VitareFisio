@@ -2,20 +2,21 @@ import { AppDataSource } from "../../../data-source";
 import { PacienteAnexo } from "../entities/PacienteAnexo";
 
 export class ListAnexosByPacienteService {
-    async execute(paciente_id: number, clinica_id?: number): Promise<PacienteAnexo[]> {
-        const repo = AppDataSource.getRepository(PacienteAnexo);
+  async execute(paciente_id: number, clinica_id?: number) {
+    const repo = AppDataSource.getRepository(PacienteAnexo);
 
-        const where: any = { paciente_id };
-        // Filtra por clinica_id quando disponível (registos antigos podem não ter)
-        if (clinica_id) {
-            where.clinica_id = clinica_id;
-        }
+    // O Postgres exige que o filtro seja exatamente do tipo da coluna (integer)
+    const anexos = await repo.find({
+      where: {
+        paciente_id: Number(paciente_id),
+        // Só aplica o filtro de clinica_id se ele existir e for um número válido
+        ...(clinica_id ? { clinica_id: Number(clinica_id) } : {})
+      },
+      order: {
+        data_criacao: "DESC"
+      }
+    });
 
-        const anexos = await repo.find({
-            where,
-            order: { data_criacao: "DESC" }
-        });
-
-        return anexos;
-    }
+    return anexos;
+  }
 }

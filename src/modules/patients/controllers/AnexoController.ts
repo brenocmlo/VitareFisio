@@ -1,113 +1,120 @@
 import { Request, Response } from "express";
-import path from "path";
-import fs from "fs";
 import { AppDataSource } from "../../../data-source";
 import { PacienteAnexo } from "../entities/PacienteAnexo";
-import uploadConfig from "../../../config/upload";
 import { ListAnexosByPacienteService } from "../services/ListAnexosByPacienteService";
+import { supabase } from "../../../shared/services/supabaseClient";
 
 export class AnexoController {
-    // POST /pacientes/:paciente_id/anexos
-    async create(req: Request, res: Response) {
-        try {
-            const { paciente_id } = req.params;
-            const { titulo, tipo } = req.body;
-            const { clinica_id } = (req.user as any) || {};
+  async create(req: Request, res: Response) {
+    try {
+      const { paciente_id } = req.params;
+      const { titulo, tipo } = req.body;
+      const { clinica_id } = (req.user as any) || {};
 
-            if (!req.file) {
-                return res.status(400).json({ error: "Arquivo não enviado." });
-            }
+      if (!req.file) {
+        return res.status(400).json({ error: "Arquivo não enviado." });
+      }
 
-            const repo = AppDataSource.getRepository(PacienteAnexo);
-            const anexo = repo.create({
-                paciente_id: Number(paciente_id),
-                clinica_id: clinica_id ? Number(clinica_id) : undefined,
-                titulo: titulo || req.file.originalname,
-                nome_arquivo: req.file.filename,
-                tipo: tipo || "outro",
-                tipo_mime: req.file.mimetype,
-                tamanho_bytes: req.file.size
-            });
+      const fileExt = req.file.originalname.split(".").pop();
+      const fileName = `${paciente_id}/${Date.now()}.${fileExt}`;
 
-            await repo.save(anexo);
-            return res.status(201).json(anexo);
-        } catch (error: any) {
-            return res.status(400).json({ error: error.message });
-        }
+      const { error: uploadError } = await supabase.storage
+        .from("anexos") // <--- Certifique-se de que é 'anexos' e não 'Anexos' ou 'anexo'
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: true,
+        });
+
+      if (uploadError) {
+        // Log importante para debug no servidor
+        console.error("Erro Supabase Storage:", uploadError.message);
+        throw new Error(`Erro no upload: ${uploadError.message}`);
+      }
+
+      const repo = AppDataSource.getRepository(PacienteAnexo);
+      const anexo = repo.create({
+        paciente_id: Number(paciente_id),
+        clinica_id: clinica_id ? Number(clinica_id) : undefined,
+        titulo: titulo || req.file.originalname,
+        nome_arquivo: fileName,
+        tipo: tipo || "outro",
+        tipo_mime: req.file.mimetype,
+        tamanho_bytes: req.file.size,
+      });
+
+      await repo.save(anexo);
+      return res.status(201).json(anexo);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
     }
+  }
 
-    // GET /pacientes/:paciente_id/anexos
-    async index(req: Request, res: Response) {
-        try {
-            const { paciente_id } = req.params;
-            const { clinica_id } = (req.user as any) || {};
+  async index(req: Request, res: Response) {
+    try {
+      const { paciente_id } = req.params;
+      const { clinica_id } = (req.user as any) || {};
 
-            const service = new ListAnexosByPacienteService();
-            const anexos = await service.execute(
-                Number(paciente_id),
-                clinica_id ? Number(clinica_id) : undefined
-            );
+      const service = new ListAnexosByPacienteService();
+      // Garantimos que ambos os IDs sejam Numbers para o Postgres
+      const anexos = await service.execute(
+        Number(paciente_id),
+        clinica_id ? Number(clinica_id) : undefined,
+      );
 
-            return res.json(anexos);
-        } catch (error: any) {
-            return res.status(400).json({ error: error.message });
-        }
+      return res.json(anexos);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
     }
+  }
 
-    // GET /anexos/:id — servir o ficheiro (preview ou download)
-    async show(req: Request, res: Response) {
-        try {
-            const { id } = req.params;
-            const repo = AppDataSource.getRepository(PacienteAnexo);
+  async show(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const repo = AppDataSource.getRepository(PacienteAnexo);
 
-            const anexo = await repo.findOneBy({ id: Number(id) });
-            if (!anexo) {
-                return res.status(404).json({ error: "Anexo não encontrado." });
-            }
+      const anexo = await repo.findOneBy({ id: Number(id) });
+      if (!anexo) {
+        return res.status(404).json({ error: "Anexo não encontrado." });
+      }
 
-            const filePath = path.join(uploadConfig.directory, anexo.nome_arquivo);
-            if (!fs.existsSync(filePath)) {
-                return res.status(404).json({ error: "Arquivo físico não encontrado no servidor." });
-            }
+      const { data, error } = await supabase.storage
+        .from("anexos")
+        .createSignedUrl(anexo.nome_arquivo, 60);
 
-            // Envia o MIME type correcto para o browser abrir inline quando possível
-            if (anexo.tipo_mime) {
-                res.setHeader("Content-Type", anexo.tipo_mime);
-            }
-            return res.sendFile(filePath);
-        } catch (error: any) {
-            return res.status(400).json({ error: error.message });
-        }
+      if (error) throw new Error(`Erro ao gerar link: ${error.message}`);
+
+      return res.json({ url: data.signedUrl });
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
     }
+  }
 
-    // DELETE /anexos/:id
-    async delete(req: Request, res: Response) {
-        try {
-            const { id } = req.params;
-            const { clinica_id } = (req.user as any) || {};
+  async delete(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { clinica_id } = (req.user as any) || {};
 
-            const repo = AppDataSource.getRepository(PacienteAnexo);
-            const anexo = await repo.findOneBy({ id: Number(id) });
+      const repo = AppDataSource.getRepository(PacienteAnexo);
+      const anexo = await repo.findOneBy({ id: Number(id) });
 
-            if (!anexo) {
-                return res.status(404).json({ error: "Anexo não encontrado." });
-            }
+      if (!anexo) {
+        return res.status(404).json({ error: "Anexo não encontrado." });
+      }
 
-            // Bloqueia remoção de anexos de outras clínicas
-            if (clinica_id && anexo.clinica_id && anexo.clinica_id !== Number(clinica_id)) {
-                return res.status(403).json({ error: "Sem permissão para remover este anexo." });
-            }
+      if (
+        clinica_id &&
+        anexo.clinica_id &&
+        anexo.clinica_id !== Number(clinica_id)
+      ) {
+        return res.status(403).json({ error: "Sem permissão." });
+      }
 
-            // Remove o ficheiro físico (não falha se já tiver sido removido)
-            const filePath = path.join(uploadConfig.directory, anexo.nome_arquivo);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
+      await supabase.storage.from("anexos").remove([anexo.nome_arquivo]);
 
-            await repo.remove(anexo);
-            return res.status(204).send();
-        } catch (error: any) {
-            return res.status(400).json({ error: error.message });
-        }
+      await repo.remove(anexo);
+      return res.status(204).send();
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
     }
+  }
 }
