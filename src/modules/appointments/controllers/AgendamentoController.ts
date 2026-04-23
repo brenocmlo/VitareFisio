@@ -101,16 +101,17 @@ export class AgendamentoController {
         }
     }
 
-    async delete(req: Request, res: Response) {
+   async cancel(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const cancelAgendamento = new CancelAgendamentoService();
-            await cancelAgendamento.execute(Number(id));
+            const service = new CancelAgendamentoService();
             
-            return res.status(204).send(); 
+            const agendamento = await service.execute({ agendamento_id: Number(id) });
+            
+            return res.status(200).json(agendamento);
         } catch (error: any) {
-            console.error("❌ ERRO AO DELETAR:", error);
             return res.status(400).json({ error: error.message });
         }
     }
+
 }

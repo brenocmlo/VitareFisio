@@ -21,16 +21,8 @@ export class DeletePagamentoService {
             throw new Error("Lançamento não encontrado.");
         }
 
-        // Se tem agendamento vinculado, desvincula antes de deletar
-        if (pagamento.agendamento_id) {
-            console.warn(
-                `[AVISO] Pagamento ${id} estava vinculado ao agendamento ${pagamento.agendamento_id}. Vínculo removido.`
-            );
-            pagamento.agendamento_id = null;
-            await pagamentoRepository.save(pagamento);
-        }
-
-        // Deletar o pagamento
+        // Deleta o pagamento diretamente. Como a linha inteira sumirá do banco de dados,
+        // não é necessário alterar os dados (fazer save) antes de excluí-la.
         await pagamentoRepository.remove(pagamento);
 
         // Logging para auditoria

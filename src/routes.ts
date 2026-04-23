@@ -17,11 +17,13 @@ import { AnexoController } from "./modules/patients/controllers/AnexoController"
 import { AnamneseController } from "./modules/patients/controllers/AnamneseController";
 import { ReportController } from "./modules/clinics/controllers/ReportController";
 import { RegistrationController } from "./modules/clinics/controllers/RegistrationController";
-import { createAutonomoSchema } from "./modules/clinics/schemas/createAutonomoSchema";
 
 // --- MIDDLEWARES E VALIDAÇÕES ---
 import { ensureAuthenticated } from "./shared/middlewares/ensureAuthenticated";
+import { checkRole } from "./shared/middlewares/checkRole";
 import { validateRequest } from "./shared/middlewares/validateRequest";
+
+// --- SCHEMAS ---
 import { createUserSchema } from "./modules/users/schemas/createUserSchema";
 import { createClinicaSchema } from "./modules/clinics/schemas/createClinicaSchema";
 import { createFisioterapeutaSchema } from "./modules/clinics/schemas/createFisioterapeutaSchema";
@@ -29,6 +31,7 @@ import { createPacienteSchema } from "./modules/patients/schemas/createPacienteS
 import { createAgendamentoSchema } from "./modules/appointments/schemas/createAgendamentoSchema";
 import { createEvolucaoSchema } from "./modules/appointments/schemas/createEvolucaoSchema";
 import { createPagamentoSchema } from "./modules/finance/schemas/createPagamentoSchema";
+import { createAutonomoSchema } from "./modules/clinics/schemas/createAutonomoSchema";
 
 const routes = Router();
 const upload = multer(uploadConfig);
@@ -50,64 +53,67 @@ const reportController = new ReportController();
 const registrationController = new RegistrationController();
 
 // ==========================================
-// 🔓 ROTAS PÚBLICAS
+// 🔓 ROTAS PÚBLICAS (Sem Token)
 // ==========================================
 routes.post("/usuarios", validateRequest(createUserSchema), userController.create);
 routes.post("/clinicas", validateRequest(createClinicaSchema), clinicaController.create);
 routes.post("/login", sessionsController.create);
 routes.post("/signup/autonomo", validateRequest(createAutonomoSchema), registrationController.signupAutonomo);
 
+
 // ==========================================
-// 🔐 ROTAS PRIVADAS (Requerem Autenticação)
+// 🔐 ROTAS PRIVADAS (Requerem Token JWT)
 // ==========================================
 routes.use(ensureAuthenticated);
 
-// --- GESTÃO DE CLÍNICA & EQUIPE ---
-routes.post("/fisioterapeutas", validateRequest(createFisioterapeutaSchema), fisioterapeutaController.create);
-routes.get("/fisioterapeutas", fisioterapeutaController.index);
-routes.get("/dashboard", dashboardController.getMetrics);
+// --- DASHBOARD ---
+routes.get("/dashboard", checkRole(["admin", "fisioterapeuta", "recepcao"]), dashboardController.getMetrics);
+
+// --- GESTÃO DE EQUIPE ---
+routes.post("/fisioterapeutas", checkRole(["admin"]), validateRequest(createFisioterapeutaSchema), fisioterapeutaController.create);
+routes.get("/fisioterapeutas", checkRole(["admin", "recepcao"]), fisioterapeutaController.index);
+routes.delete("/fisioterapeutas/:id", checkRole(["admin"]), fisioterapeutaController.delete);
 
 // --- PACIENTES ---
-routes.post("/pacientes", validateRequest(createPacienteSchema), pacienteController.create);
-routes.get("/pacientes", pacienteController.index);
-routes.get("/pacientes/:id", pacienteController.show);
-routes.delete("/pacientes/:id", pacienteController.delete);
+routes.post("/pacientes", checkRole(["admin", "fisioterapeuta", "recepcao"]), validateRequest(createPacienteSchema), pacienteController.create);
+routes.get("/pacientes/cpf/:cpf", checkRole(["admin", "fisioterapeuta", "recepcao"]), pacienteController.showByCpf);
+routes.get("/pacientes", checkRole(["admin", "fisioterapeuta", "recepcao"]), pacienteController.index);
+routes.get("/pacientes/:id", checkRole(["admin", "fisioterapeuta", "recepcao"]), pacienteController.show);
+routes.delete("/pacientes/:id", checkRole(["admin"]), pacienteController.delete);
 
-// --- ANAMNESE ---
-routes.post("/pacientes/:paciente_id/anamnese", anamneseController.createOrUpdate);
-routes.get("/pacientes/:paciente_id/anamnese", anamneseController.show);
+// --- PRONTUÁRIO CLÍNICO (ANAMNESE E EVOLUÇÕES) ---
+routes.post("/pacientes/:paciente_id/anamnese", checkRole(["admin", "fisioterapeuta"]), anamneseController.createOrUpdate);
+routes.get("/pacientes/:paciente_id/anamnese", checkRole(["admin", "fisioterapeuta"]), anamneseController.show);
+routes.post("/evolucoes", checkRole(["admin", "fisioterapeuta"]), validateRequest(createEvolucaoSchema), evolucaoController.create);
+routes.get("/pacientes/:paciente_id/evolucoes", checkRole(["admin", "fisioterapeuta"]), evolucaoController.index);
+routes.put("/evolucoes/:id", checkRole(["admin", "fisioterapeuta"]), evolucaoController.update);
+routes.patch("/evolucoes/:id/finalizar", checkRole(["admin", "fisioterapeuta"]), evolucaoController.finalize);
 
 // --- PACOTES DE SESSÕES ---
-routes.get("/pacientes/:paciente_id/pacotes", pacoteController.index);
+routes.get("/pacientes/:paciente_id/pacotes", checkRole(["admin", "fisioterapeuta", "recepcao"]), pacoteController.index);
 
 // --- ANEXOS E DOCUMENTOS ---
-routes.post("/pacientes/:paciente_id/anexos", upload.single("documento"), anexoController.create);
-routes.get("/pacientes/:paciente_id/anexos", anexoController.index);
-routes.get("/anexos/:id", anexoController.show);
-routes.delete("/anexos/:id", anexoController.delete);
+routes.post("/pacientes/:paciente_id/anexos", checkRole(["admin", "fisioterapeuta", "recepcao"]), upload.single("documento"), anexoController.create);
+routes.get("/pacientes/:paciente_id/anexos", checkRole(["admin", "fisioterapeuta", "recepcao"]), anexoController.index);
+routes.get("/anexos/:id", checkRole(["admin", "fisioterapeuta", "recepcao"]), anexoController.show);
+routes.delete("/anexos/:id", checkRole(["admin", "fisioterapeuta"]), anexoController.delete);
 
 // --- AGENDA E ATENDIMENTOS ---
-routes.post("/agendamentos", validateRequest(createAgendamentoSchema), agendamentoController.create);
-routes.patch("/agendamentos/:id/reagendar", agendamentoController.update);
-routes.patch("/agendamentos/:id/status", agendamentoController.updateStatus);
-routes.get("/agendamentos", agendamentoController.index);
-routes.delete("/agendamentos/:id", agendamentoController.delete);
+routes.post("/agendamentos", checkRole(["admin", "fisioterapeuta", "recepcao"]), validateRequest(createAgendamentoSchema), agendamentoController.create);
+routes.patch("/agendamentos/:id/reagendar", checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.update);
+routes.patch("/agendamentos/:id/status", checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.updateStatus);
+// NOVA ROTA AQUI:
+routes.patch("/agendamentos/:id/cancelar", checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.cancel); 
+routes.get("/agendamentos", checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.index);
+routes.get("/agendamentos/:id/lembrete", checkRole(["admin", "recepcao", "fisioterapeuta"]), agendamentoController.generateReminder);
 
-// --- PRONTUÁRIO (EVOLUÇÕES) ---
-routes.post("/evolucoes", validateRequest(createEvolucaoSchema), evolucaoController.create);
-routes.get("/pacientes/:paciente_id/evolucoes", evolucaoController.index);
-routes.put("/evolucoes/:id", evolucaoController.update);
-routes.patch("/evolucoes/:id/finalizar", evolucaoController.finalize);
 
 // --- FINANCEIRO ---
-routes.post("/pagamentos", validateRequest(createPagamentoSchema), pagamentoController.create);
-routes.get("/pagamentos", pagamentoController.index);
-routes.delete("/pagamentos/:id", pagamentoController.delete);
+routes.post("/pagamentos", checkRole(["admin", "recepcao"]), validateRequest(createPagamentoSchema), pagamentoController.create);
+routes.get("/pagamentos", checkRole(["admin", "recepcao", "fisioterapeuta"]), pagamentoController.index);
+routes.delete("/pagamentos/:id", checkRole(["admin"]), pagamentoController.delete);
 
 // --- RELATÓRIOS ---
-routes.get("/pacientes/:paciente_id/relatorio", reportController.exportProntuario);
-
-// --- COMUNICAÇÃO ---
-routes.get("/agendamentos/:id/lembrete", agendamentoController.generateReminder);
+routes.get("/pacientes/:paciente_id/relatorio", checkRole(["admin", "fisioterapeuta"]), reportController.exportProntuario);
 
 export { routes };
