@@ -4,21 +4,9 @@ import { verify } from "jsonwebtoken";
 interface TokenPayload {
     sub: string;
     clinica_id: number;
-    tipo: string; // <-- ADICIONADO
+    tipo: string;
     iat: number;
     exp: number;
-}
-
-declare global {
-    namespace Express {
-        interface Request {
-            user?: {
-                id: string;
-                clinica_id: number;
-                tipo: string; // <-- ADICIONADO
-            };
-        }
-    }
 }
 
 export function ensureAuthenticated(
@@ -39,16 +27,20 @@ export function ensureAuthenticated(
     }
 
     try {
-        const decoded = verify(token, "segredo-vitarefisio-2026") as TokenPayload;
+        const jwtSecret = process.env.JWT_SECRET || "segredo-vitarefisio-2026";
+        const decoded = verify(token, jwtSecret) as TokenPayload;
+
+        const { sub, tipo, clinica_id } = decoded;
 
         req.user = {
-            id: decoded.sub,
-            clinica_id: decoded.clinica_id,
-            tipo: decoded.tipo, // <-- ADICIONADO: Repassa para todas as rotas
+            id: sub,
+            tipo: tipo,
+            clinica_id: Number(clinica_id),
         };
 
         return next();
-    } catch (error: any) {
-        return res.status(401).json({ error: "Token inválido." });
+    } catch {
+        return res.status(401).json({ error: "Token inválido" });
     }
+
 }

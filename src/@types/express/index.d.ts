@@ -1,10 +1,9 @@
-// src/@types/express/index.d.ts
-
 declare namespace Express {
-  export interface Request {
-    user: {
-      id: string;
-      role: string; // Adicionamos a role aqui!
-    };
-  }
+    export interface Request {
+        user: {
+            id: string;
+            tipo: string;
+            clinica_id: number;
+        };
+    }
 }
