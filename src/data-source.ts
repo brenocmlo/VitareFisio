@@ -1,21 +1,23 @@
 import "reflect-metadata";
-import * as dotenv from 'dotenv';
-import path from 'path';
-
-// O arquivo .env está uma pasta acima de 'src', na raiz do projeto
-dotenv.config({ path: path.resolve(__dirname, '..', '.env') }); 
-
 import { DataSource } from "typeorm";
 
-console.log("Conectando na URL:", process.env.DATABASE_URL); // Agora deve imprimir a URL real no terminal
+const isProduction = process.env.NODE_ENV === "production";
 
 export const AppDataSource = new DataSource({
-    type: "postgres",
-    url: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false,
-    },
-    synchronize: false,
-    entities: ["src/modules/**/entities/*.ts"],
-    migrations: ["src/shared/migrations/*.ts"],
+  type: "postgres", // Confirme se está postgres
+  url: process.env.DATABASE_URL,
+  synchronize: false, // Nunca use true em produção
+  logging: !isProduction,
+  // O SEGREDO ESTÁ AQUI:
+  entities: [
+    isProduction 
+      ? "dist/modules/**/entities/*.js" 
+      : "src/modules/**/entities/*.ts"
+  ],
+  migrations: [
+    isProduction 
+      ? "dist/shared/infra/typeorm/migrations/*.js" 
+      : "src/shared/infra/typeorm/migrations/*.ts"
+  ],
+  subscribers: [],
 });
