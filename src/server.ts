@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import "dotenv/config";
 import express, { Request, Response } from "express";
 import cors from "cors";
 import { AppDataSource } from "./data-source";

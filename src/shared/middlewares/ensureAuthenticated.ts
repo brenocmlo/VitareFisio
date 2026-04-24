@@ -27,7 +27,12 @@ export function ensureAuthenticated(
     }
 
     try {
-        const jwtSecret = process.env.JWT_SECRET || "segredo-vitarefisio-2026";
+        const jwtSecret = process.env.JWT_SECRET;
+        
+        if (!jwtSecret) {
+            return res.status(500).json({ error: "JWT_SECRET não configurado" });
+        }
+
         const decoded = verify(token, jwtSecret) as TokenPayload;
 
         const { sub, tipo, clinica_id } = decoded;
