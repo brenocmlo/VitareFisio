@@ -64,14 +64,13 @@ const googleCalendarController = new GoogleCalendarController(); // Nova Instân
 // ==========================================
 // 🔓 ROTAS PÚBLICAS (Sem Token)
 // ==========================================
+routes.post("/password/forgot", forgotPasswordController.send);
+routes.post("/password/reset", forgotPasswordController.reset);
 routes.post("/usuarios", validateRequest(createUserSchema), userController.create);
 routes.post("/clinicas", validateRequest(createClinicaSchema), clinicaController.create);
 routes.post("/login", sessionsController.create);
 routes.post("/signup/autonomo", validateRequest(createAutonomoSchema), registrationController.signupAutonomo);
 
-// Endpoints de Recuperação de Senha
-routes.post("/password/forgot", forgotPasswordController.send);
-routes.post("/password/reset", forgotPasswordController.reset);
 
 // ==========================================
 // 🔐 ROTAS PRIVADAS (Requerem Token JWT)
