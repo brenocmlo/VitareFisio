@@ -24,9 +24,6 @@ export class DeleteFisioterapeutaService {
 
         // 3. Se encontrar o usuário de login, faz as validações e revoga o acesso
         if (usuario) {
-            if (usuario.tipo === 'admin') {
-                throw new Error("Não é possível revogar o acesso de um perfil Administrador.");
-            }
             // Deleta o login do sistema
             await usuarioRepository.remove(usuario);
         }
