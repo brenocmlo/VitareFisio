@@ -91,7 +91,7 @@ routes.post("/signup/autonomo", validateRequest(createAutonomoSchema), registrat
 
 // --- INTEGRAÇÃO GOOGLE CALENDAR ---
 routes.get("/google/auth", ensureAuthenticated, googleCalendarController.getAuthUrl);
-routes.get("/google/callback", ensureAuthenticated, googleCalendarController.handleCallback);
+routes.get("/google/callback", googleCalendarController.handleCallback); // <-- Rota agora é pública!
 
 // --- DASHBOARD ---
 routes.get("/dashboard", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), dashboardController.getMetrics);

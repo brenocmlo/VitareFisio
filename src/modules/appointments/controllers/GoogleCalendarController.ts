@@ -19,15 +19,19 @@ export class GoogleCalendarController {
   public getAuthUrl = async (req: Request, res: Response): Promise<void> => {
     try {
         const oauth2Client = this.getOAuth2Client();
+        const userId = req.user.id; // Pegamos o ID do usuário logado
+
         const scopes = [
           'https://www.googleapis.com/auth/calendar.events',
           'https://www.googleapis.com/auth/calendar.readonly'
         ];
 
+        // O 'state' é enviado ao Google e ele nos devolve exatamente igual no callback
         const url = oauth2Client.generateAuthUrl({
           access_type: 'offline',
           scope: scopes,
-          prompt: 'consent'
+          prompt: 'consent',
+          state: String(userId) 
         });
 
         res.json({ url });
@@ -38,11 +42,16 @@ export class GoogleCalendarController {
   }
 
   public handleCallback = async (req: Request, res: Response): Promise<void> => {
-    const { code } = req.query;
-    const userId = req.user.id;
+    const { code, state } = req.query; // 'state' contém o userId que enviamos
+    const userId = state as string;
 
     if (!code) {
       res.status(400).json({ error: "Code não fornecido" });
+      return;
+    }
+
+    if (!userId) {
+      res.status(400).json({ error: "Usuário não identificado no estado." });
       return;
     }
 
@@ -55,6 +64,7 @@ export class GoogleCalendarController {
       } else {
         const usuarioRepository = AppDataSource.getRepository(Usuario);
         
+        // Salvamos o token no usuário correto usando o ID vindo do 'state'
         await usuarioRepository.update(userId, {
           google_refresh_token: tokens.refresh_token
         });
