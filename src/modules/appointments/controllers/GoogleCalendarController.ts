@@ -7,11 +7,11 @@ export class GoogleCalendarController {
   private getOAuth2Client = () => {
     const client_id = process.env.GOOGLE_CLIENT_ID;
     const client_secret = process.env.GOOGLE_CLIENT_SECRET;
-    const redirect_uri = process.env.GOOGLE_REDIRECT_URL;
+    const redirect_uri = process.env.GOOGLE_REDIRECT_URI; // <-- Mudado de URL para URI para bater com o Render
 
     if (!client_id) throw new Error("Faltando GOOGLE_CLIENT_ID no servidor.");
     if (!client_secret) throw new Error("Faltando GOOGLE_CLIENT_SECRET no servidor.");
-    if (!redirect_uri) throw new Error("Faltando GOOGLE_REDIRECT_URL no servidor.");
+    if (!redirect_uri) throw new Error("Faltando GOOGLE_REDIRECT_URI no servidor.");
 
     return new google.auth.OAuth2(client_id, client_secret, redirect_uri);
   }
