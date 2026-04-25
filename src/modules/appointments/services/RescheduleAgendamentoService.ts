@@ -5,6 +5,7 @@ import {
     addMinutesToAppointmentDateTime,
     normalizeAppointmentDateTime,
 } from "../utils/appointmentDateTime";
+import { SyncGoogleCalendarService } from "./SyncGoogleCalendarService";
 
 interface IRequest {
     agendamento_id: number;
@@ -46,6 +47,12 @@ export class RescheduleAgendamentoService {
         agendamento.status = "agendado"; 
 
         await agendamentoRepository.save(agendamento);
+
+        // --- SINCRONIZAÇÃO GOOGLE ---
+        const syncGoogle = new SyncGoogleCalendarService();
+        syncGoogle.update(agendamento.id).catch(err => {
+            console.error("Erro assíncrono ao atualizar no Google:", err);
+        });
 
         return agendamento;
     }

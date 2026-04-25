@@ -2,6 +2,7 @@ import { AppDataSource } from "../../../data-source";
 import { Agendamento } from "../entities/Agendamento";
 import { Pagamento } from "../../finance/entities/Pagamento";
 import { PacotePaciente } from "../../patients/entities/PacotePaciente";
+import { SyncGoogleCalendarService } from "./SyncGoogleCalendarService";
 
 interface IRequest {
     agendamento_id: number;
@@ -66,6 +67,14 @@ export class CancelAgendamentoService {
                     }
                 }
             }
+
+            await transactionalEntityManager.save(agendamento);
+
+            // --- SINCRONIZAÇÃO GOOGLE ---
+            const syncGoogle = new SyncGoogleCalendarService();
+            syncGoogle.delete(agendamento.id).catch(err => {
+                console.error("Erro assíncrono ao deletar do Google:", err);
+            });
 
             return agendamento;
         });

@@ -43,6 +43,9 @@ export class Agendamento {
     @Column({ nullable: true })
     pacote_paciente_id: number;
 
+    @Column({ nullable: true })
+    google_event_id: string;
+
     @ManyToOne(() => Paciente)
     @JoinColumn({ name: "paciente_id" })
     paciente: Paciente;
