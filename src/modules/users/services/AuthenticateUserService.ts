@@ -27,7 +27,7 @@ export class AuthenticateUserService {
         const token = sign({ 
             clinica_id: usuario.clinica_id,
             tipo: usuario.tipo
-        }, "segredo-vitarefisio-2026", {
+        }, process.env.JWT_SECRET || "segredo-vitarefisio-2026", {
             subject: String(usuario.id),
             expiresIn: "1d",
         });
