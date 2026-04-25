@@ -3,26 +3,37 @@ import { google } from "googleapis";
 import { AppDataSource } from "../../../data-source";
 import { Usuario } from "../../users/entities/Usuario";
 
-const oauth2Client = new google.auth.OAuth2(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  process.env.GOOGLE_REDIRECT_URL
-);
-
 export class GoogleCalendarController {
+  private getOAuth2Client() {
+    const client_id = process.env.GOOGLE_CLIENT_ID;
+    const client_secret = process.env.GOOGLE_CLIENT_SECRET;
+    const redirect_uri = process.env.GOOGLE_REDIRECT_URL;
+
+    if (!client_id || !client_secret || !redirect_uri) {
+        throw new Error("Configurações do Google Calendar incompletas no servidor.");
+    }
+
+    return new google.auth.OAuth2(client_id, client_secret, redirect_uri);
+  }
+
   public async getAuthUrl(req: Request, res: Response): Promise<void> {
-    const scopes = [
-      'https://www.googleapis.com/auth/calendar.events',
-      'https://www.googleapis.com/auth/calendar.readonly'
-    ];
+    try {
+        const oauth2Client = this.getOAuth2Client();
+        const scopes = [
+          'https://www.googleapis.com/auth/calendar.events',
+          'https://www.googleapis.com/auth/calendar.readonly'
+        ];
 
-    const url = oauth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: scopes,
-      prompt: 'consent' // Garante que o refresh_token seja retornado
-    });
+        const url = oauth2Client.generateAuthUrl({
+          access_type: 'offline',
+          scope: scopes,
+          prompt: 'consent'
+        });
 
-    res.json({ url });
+        res.json({ url });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
+    }
   }
 
   public async handleCallback(req: Request, res: Response): Promise<void> {
@@ -35,11 +46,10 @@ export class GoogleCalendarController {
     }
 
     try {
+      const oauth2Client = this.getOAuth2Client();
       const { tokens } = await oauth2Client.getToken(code as string);
       
       if (!tokens.refresh_token) {
-        // Se não vier refresh_token, pode ser que o usuário já tenha autorizado antes.
-        // Em um cenário real, poderíamos tratar isso pedindo 'prompt: consent' novamente.
         console.warn("Refresh token não retornado pelo Google.");
       } else {
         const usuarioRepository = AppDataSource.getRepository(Usuario);
@@ -49,7 +59,6 @@ export class GoogleCalendarController {
         });
       }
 
-      // Redireciona de volta para o frontend (ajuste a rota conforme necessário)
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
       res.redirect(`${frontendUrl}/agenda?google_sync=success`);
     } catch (error) {
