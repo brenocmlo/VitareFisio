@@ -65,6 +65,17 @@ const googleCalendarController = new GoogleCalendarController(); // Nova Instân
 // 🔓 ROTAS PÚBLICAS (Sem Token)
 // ==========================================
 routes.get("/", (req, res) => res.json({ message: "VitareFisio API está online! 🚀" }));
+
+// ROTA DE DIAGNÓSTICO (Remova após resolver o problema)
+routes.get("/debug-env", (req, res) => {
+    res.json({
+        has_client_id: !!process.env.GOOGLE_CLIENT_ID,
+        has_client_secret: !!process.env.GOOGLE_CLIENT_SECRET,
+        has_redirect_url: !!process.env.GOOGLE_REDIRECT_URL,
+        has_frontend_url: !!process.env.FRONTEND_URL,
+        node_env: process.env.NODE_ENV
+    });
+});
 routes.post("/password/forgot", forgotPasswordController.send);
 routes.post("/password/reset", forgotPasswordController.reset);
 routes.post("/usuarios", validateRequest(createUserSchema), userController.create);
