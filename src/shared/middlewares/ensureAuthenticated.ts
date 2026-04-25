@@ -17,6 +17,7 @@ export function ensureAuthenticated(
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
+        console.warn(`[AUTH] Tentativa de acesso bloqueada (sem token): ${req.method} ${req.url}`);
         return res.status(401).json({ error: "Token não fornecido." });
     }
 
