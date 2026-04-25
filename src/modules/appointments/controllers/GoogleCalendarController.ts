@@ -9,9 +9,9 @@ export class GoogleCalendarController {
     const client_secret = process.env.GOOGLE_CLIENT_SECRET;
     const redirect_uri = process.env.GOOGLE_REDIRECT_URL;
 
-    if (!client_id || !client_secret || !redirect_uri) {
-        throw new Error("Configurações do Google Calendar incompletas no servidor.");
-    }
+    if (!client_id) throw new Error("Faltando GOOGLE_CLIENT_ID no servidor.");
+    if (!client_secret) throw new Error("Faltando GOOGLE_CLIENT_SECRET no servidor.");
+    if (!redirect_uri) throw new Error("Faltando GOOGLE_REDIRECT_URL no servidor.");
 
     return new google.auth.OAuth2(client_id, client_secret, redirect_uri);
   }
