@@ -16,6 +16,8 @@ import { AnexoController } from "./modules/patients/controllers/AnexoController"
 import { AnamneseController } from "./modules/patients/controllers/AnamneseController";
 import { ReportController } from "./modules/clinics/controllers/ReportController";
 import { RegistrationController } from "./modules/clinics/controllers/RegistrationController";
+import { GoogleCalendarController } from "./modules/appointments/controllers/GoogleCalendarController";
+import { ForgotPasswordController } from "./modules/users/controllers/ForgotPasswordController";
 
 // --- MIDDLEWARES E VALIDAÇÕES ---
 import { ensureAuthenticated } from "./shared/middlewares/ensureAuthenticated";
@@ -44,6 +46,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // --- INSTÂNCIAS ---
 const userController = new UserController();
 const sessionsController = new SessionsController();
+const forgotPasswordController = new ForgotPasswordController();
 const clinicaController = new ClinicaController();
 const fisioterapeutaController = new FisioterapeutaController();
 const pacienteController = new PacienteController();
@@ -56,6 +59,7 @@ const anexoController = new AnexoController();
 const anamneseController = new AnamneseController();
 const reportController = new ReportController();
 const registrationController = new RegistrationController();
+const googleCalendarController = new GoogleCalendarController(); // Nova Instância
 
 // ==========================================
 // 🔓 ROTAS PÚBLICAS (Sem Token)
@@ -65,11 +69,20 @@ routes.post("/clinicas", validateRequest(createClinicaSchema), clinicaController
 routes.post("/login", sessionsController.create);
 routes.post("/signup/autonomo", validateRequest(createAutonomoSchema), registrationController.signupAutonomo);
 
+// Endpoints de Recuperação de Senha
+routes.post("/password/forgot", forgotPasswordController.send);
+routes.post("/password/reset", forgotPasswordController.reset);
 
 // ==========================================
 // 🔐 ROTAS PRIVADAS (Requerem Token JWT)
 // ==========================================
 routes.use(ensureAuthenticated);
+
+// --- INTEGRAÇÃO GOOGLE CALENDAR ---
+// Rota para iniciar o fluxo de autorização (gera a URL)
+routes.get("/google/auth", googleCalendarController.getAuthUrl);
+// Rota de callback que o Google chama (deve ser a mesma do seu .env e do Google Console)
+routes.get("/google/callback", googleCalendarController.handleCallback);
 
 // --- DASHBOARD ---
 routes.get("/dashboard", checkRole(["admin", "fisioterapeuta", "recepcao"]), dashboardController.getMetrics);
@@ -98,7 +111,6 @@ routes.patch("/evolucoes/:id/finalizar", checkRole(["admin", "fisioterapeuta"]),
 routes.get("/pacientes/:paciente_id/pacotes", checkRole(["admin", "fisioterapeuta", "recepcao"]), pacoteController.index);
 
 // --- ANEXOS E DOCUMENTOS (SUPABASE STORAGE) ---
-// O campo no FormData do Frontend deve chamar-se "documento"
 routes.post(
     "/pacientes/:paciente_id/anexos", 
     checkRole(["admin", "fisioterapeuta", "recepcao"]), 
@@ -119,9 +131,9 @@ routes.get("/agendamentos/:id/lembrete", checkRole(["admin", "recepcao", "fisiot
 
 
 // --- FINANCEIRO ---
-routes.post("/pagamentos", checkRole(["admin", "recepcao"]), validateRequest(createPagamentoSchema), pagamentoController.create);
+routes.post("/pagamentos", checkRole(["admin", "recepcao", "fisioterapeuta"]), validateRequest(createPagamentoSchema), pagamentoController.create);
 routes.get("/pagamentos", checkRole(["admin", "recepcao", "fisioterapeuta"]), pagamentoController.index);
-routes.delete("/pagamentos/:id", checkRole(["admin"]), pagamentoController.delete);
+routes.delete("/pagamentos/:id", checkRole(["admin", "fisioterapeuta"]), pagamentoController.delete);
 
 // --- RELATÓRIOS ---
 routes.get("/pacientes/:paciente_id/relatorio", checkRole(["admin", "fisioterapeuta"]), reportController.exportProntuario);

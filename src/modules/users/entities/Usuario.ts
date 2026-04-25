@@ -25,4 +25,10 @@ export class Usuario {
 
     @CreateDateColumn({ type: "timestamp" })
     data_criacao: Date;
+
+    @Column({ nullable: true, select: false })
+    google_refresh_token: string;
+
+    @Column({ default: false })
+    is_autonomo: boolean;
 }

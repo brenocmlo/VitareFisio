@@ -18,8 +18,13 @@ export class FisioterapeutaController {
     async index(req: Request, res: Response) {
         try {
             const { clinica_id } = req.query;
+            
+            // Prioridade para clinica_id da query, se não houver, usa o do usuário logado
+            const targetClinicaId = clinica_id ? Number(clinica_id) : req.user.clinica_id;
+
             const service = new ListFisioterapeutasService();
-            const fisioterapeutas = await service.execute(clinica_id ? Number(clinica_id) : undefined);
+            const fisioterapeutas = await service.execute(Number(targetClinicaId));
+            
             return res.status(200).json(fisioterapeutas);
         } catch (error: any) {
             return res.status(400).json({ error: error.message });

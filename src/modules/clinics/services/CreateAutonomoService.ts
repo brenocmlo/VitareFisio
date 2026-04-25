@@ -41,7 +41,8 @@ export class CreateAutonomoService {
             cpf,
             senha: hashedPassword,
             clinica_id: clinica.id,
-            tipo: "fisioterapeuta"
+            tipo: "admin",
+            is_autonomo: true
         });
         await userRepository.save(user);
 

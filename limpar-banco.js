@@ -16,7 +16,7 @@ const tabelas = [
   'pagamentos', 
   'pacientes', 
   'fisioterapeutas', 
-  'usuarios'
+  //'usuarios'
 ];
 
 function limparProxima(index) {

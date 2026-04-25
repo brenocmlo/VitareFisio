@@ -5,6 +5,7 @@ import { RescheduleAgendamentoService } from "../services/RescheduleAgendamentoS
 import { GenerateWhatsAppLinkService } from "../services/GenerateWhatsAppLinkService"; 
 import { UpdateAgendamentoStatusService } from "../services/UpdateAgendamentoStatusService";
 import { CancelAgendamentoService } from "../services/CancelAgendamentoService";
+import { SyncGoogleCalendarService } from "../services/SyncGoogleCalendarService";
 
 export class AgendamentoController {
     async create(req: Request, res: Response) {
@@ -18,6 +19,7 @@ export class AgendamentoController {
             } = req.body;
 
             const createAgendamento = new CreateAgendamentoService();
+            const syncGoogleCalendar = new SyncGoogleCalendarService();
 
             const agendamento = await createAgendamento.execute({
                 paciente_id: Number(paciente_id),
@@ -26,6 +28,11 @@ export class AgendamentoController {
                 clinica_id: Number(clinica_id),
                 fisioterapeuta_id: Number(fisioterapeuta_id),
                 status: "agendado"
+            });
+
+            // Sincronização em segundo plano (não trava a resposta ao usuário)
+            syncGoogleCalendar.execute(agendamento.id).catch(err => {
+                console.error("⚠️ Falha na sincronização automática com Google Calendar:", err);
             });
 
             return res.status(201).json(agendamento);

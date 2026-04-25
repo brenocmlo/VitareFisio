@@ -24,6 +24,9 @@ export class Fisioterapeuta {
     @Column({ type: "enum", enum: ["ativo", "inativo"], default: "ativo" })
     status: string;
 
+    @Column({ default: false })
+    is_autonomo: boolean;
+
     @ManyToOne(() => Clinica)
     @JoinColumn({ name: "clinica_id" })
     clinica: Clinica;
