@@ -4,7 +4,7 @@ import { AppDataSource } from "../../../data-source";
 import { Usuario } from "../../users/entities/Usuario";
 
 export class GoogleCalendarController {
-  private getOAuth2Client() {
+  private getOAuth2Client = () => {
     const client_id = process.env.GOOGLE_CLIENT_ID;
     const client_secret = process.env.GOOGLE_CLIENT_SECRET;
     const redirect_uri = process.env.GOOGLE_REDIRECT_URL;
@@ -16,7 +16,7 @@ export class GoogleCalendarController {
     return new google.auth.OAuth2(client_id, client_secret, redirect_uri);
   }
 
-  public async getAuthUrl(req: Request, res: Response): Promise<void> {
+  public getAuthUrl = async (req: Request, res: Response): Promise<void> => {
     try {
         const oauth2Client = this.getOAuth2Client();
         const scopes = [
@@ -32,11 +32,12 @@ export class GoogleCalendarController {
 
         res.json({ url });
     } catch (error: any) {
+        console.error("Erro no getAuthUrl:", error);
         res.status(500).json({ error: error.message });
     }
   }
 
-  public async handleCallback(req: Request, res: Response): Promise<void> {
+  public handleCallback = async (req: Request, res: Response): Promise<void> => {
     const { code } = req.query;
     const userId = req.user.id;
 
