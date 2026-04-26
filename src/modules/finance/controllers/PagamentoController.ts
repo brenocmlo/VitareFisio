@@ -12,6 +12,7 @@ export class PagamentoController {
                 agendamento_id,
                 valor,
                 forma_pagamento,
+                metodo_pagamento, // Adicionado para suportar ambos os nomes de campo
                 status,
                 data_pagamento,
                 is_pacote,
@@ -23,7 +24,7 @@ export class PagamentoController {
                 typeof clinica_id === "number" ? clinica_id : undefined;
 
             if (!clinicaIdResolvido && req.user) {
-                clinicaIdResolvido = req.user.clinica_id || Number(req.user.id);
+                clinicaIdResolvido = (req.user as any).clinica_id || Number(req.user.id);
             }
 
             if (!clinicaIdResolvido) {
@@ -33,14 +34,14 @@ export class PagamentoController {
             const createPagamentoService = new CreatePagamentoService();
 
             const pagamento = await createPagamentoService.execute({
-                paciente_id,
+                paciente_id: Number(paciente_id),
                 clinica_id: clinicaIdResolvido,
-                agendamento_id,
-                valor,
-                forma_pagamento,
+                agendamento_id: agendamento_id ? Number(agendamento_id) : undefined,
+                valor: Number(valor),
+                forma_pagamento: forma_pagamento || metodo_pagamento,
                 status,
                 data_pagamento,
-                is_pacote: Boolean(is_pacote),
+                is_pacote: is_pacote === true || is_pacote === 'true',
                 quantidade_sessoes: quantidade_sessoes ? Number(quantidade_sessoes) : 1
             });
 
