@@ -155,8 +155,10 @@ export function fromAppointmentDatabaseValue(value: string | Date | null): strin
         return null;
     }
 
-    if (typeof value === "string") {
-        return normalizeAppointmentDateTime(value);
+    if (value instanceof Date) {
+        // Se o banco devolve um objeto Date, extraímos as partes como UTC 
+        // para manter o "horário de relógio" original salvo no banco.
+        return buildLocalDateTimeString(extractDatePartsFromUtcDate(value));
     }
 
     return normalizeAppointmentDateTime(value);

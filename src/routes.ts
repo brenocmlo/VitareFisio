@@ -140,6 +140,7 @@ routes.post("/agendamentos/:id/reminder", ensureAuthenticated, agendamentoContro
 routes.patch("/agendamentos/:id/reagendar", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.update);
 routes.patch("/agendamentos/:id/status", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.updateStatus);
 routes.patch("/agendamentos/:id/cancelar", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.cancel); 
+routes.delete("/agendamentos/:id", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.cancel);
 routes.get("/agendamentos", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.index);
 routes.get("/agendamentos/:id/lembrete", ensureAuthenticated, checkRole(["admin", "recepcao", "fisioterapeuta"]), agendamentoController.generateReminder);
 
