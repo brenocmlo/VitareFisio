@@ -42,14 +42,40 @@ export class PacienteController {
             const { clinica_id } = req.user as any; // 🔒 Puxando direto do Token JWT
 
             const pacienteRepo = AppDataSource.getRepository(Paciente);
-            const paciente = await pacienteRepo.findOneBy({
-                id: Number(id),
-                clinica_id: Number(clinica_id)
-            });
+            
+            const query = pacienteRepo.createQueryBuilder("paciente")
+                .leftJoin(
+                    qb => qb
+                        .select("paciente_id")
+                        .addSelect("SUM(sessoes_restantes)", "total_sessoes")
+                        .from("pacotes_pacientes", "pacote")
+                        .where("status_pagamento = :status", { status: "pago" })
+                        .groupBy("paciente_id"),
+                    "pacotes",
+                    "pacotes.paciente_id = paciente.id"
+                )
+                .addSelect("paciente.*")
+                .addSelect("COALESCE(pacotes.total_sessoes, 0)", "sessoes_restantes")
+                .where("paciente.id = :id", { id: Number(id) })
+                .andWhere("paciente.clinica_id = :clinica_id", { clinica_id: Number(clinica_id) });
 
-            if (!paciente) {
+            const row = await query.getRawOne();
+
+            if (!row) {
                 return res.status(404).json({ error: "Paciente não encontrado." });
             }
+
+            const paciente = {
+                id: row.id,
+                nome: row.nome,
+                cpf: row.cpf,
+                data_nascimento: row.data_nascimento,
+                contato_whatsapp: row.contato_whatsapp,
+                endereco_completo: row.endereco_completo,
+                valor_sessao: row.valor_sessao,
+                clinica_id: row.clinica_id,
+                sessoes_restantes: Number(row.sessoes_restantes || 0)
+            };
 
             return res.json(paciente);
         } catch (error: any) {
