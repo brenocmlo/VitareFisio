@@ -1,6 +1,7 @@
 import { AppDataSource } from "../../../data-source";
 import { Agendamento } from "../entities/Agendamento";
 import { Paciente } from "../../patients/entities/Paciente";
+import { Usuario } from "../../users/entities/Usuario";
 import {
     formatAppointmentDate,
     formatAppointmentTime,
@@ -27,14 +28,19 @@ export class GenerateWhatsAppLinkService {
             throw new Error("Este paciente não possui um número de WhatsApp cadastrado.");
         }
 
-        // 3. Formata a Data e Hora para o padrão brasileiro/português
+        // 3. Procura o fisioterapeuta para pegar o nome
+        const usuarioRepo = AppDataSource.getRepository(Usuario);
+        const fisioterapeuta = await usuarioRepo.findOneBy({ id: agendamento.fisioterapeuta_id });
+        const nomeFisio = fisioterapeuta ? fisioterapeuta.nome : "da VitareFisio";
+
+        // 4. Formata a Data e Hora para o padrão brasileiro/português
         const dataFormatada = formatAppointmentDate(agendamento.data_hora);
         const horaFormatada = formatAppointmentTime(agendamento.data_hora);
 
-        // 4. Montagem da mensagem humanizada
-        const mensagem = `Olá, ${paciente.nome}! 🏥\n\nAqui é da VitareFisio. Estamos a passar para lembrar da sua sessão de fisioterapia agendada para o dia *${dataFormatada}* às *${horaFormatada}*.\n\nPor favor, responda "SIM" para confirmar ou "NÃO" caso precise de reagendar.`;
+        // 5. Montagem da mensagem personalizada solicitada pelo usuário
+        const mensagem = `Olá, ${paciente.nome}! Aqui é ${nomeFisio}. Passando para lembrar da sua sessão de fisioterapia agendada para o dia *${dataFormatada}* às *${horaFormatada}*. Por favor, responda 'SIM' para confirmar ou 'NÃO' caso precise reagendar.`;
 
-        // 5. Transforma o texto para o formato de URL (substitui espaços por %20, etc)
+        // 6. Transforma o texto para o formato de URL (substitui espaços por %20, etc)
         const textoCodificado = encodeURIComponent(mensagem);
 
         // 6. Limpa o número do WhatsApp (remove parênteses, traços e espaços)

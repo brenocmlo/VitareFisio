@@ -133,6 +133,7 @@ routes.delete("/anexos/:id", ensureAuthenticated, checkRole(["admin", "fisiotera
 
 // --- AGENDA E ATENDIMENTOS ---
 routes.post("/agendamentos", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), validateRequest(createAgendamentoSchema), agendamentoController.create);
+routes.post("/agendamentos/:id/reminder", ensureAuthenticated, agendamentoController.generateReminder);
 routes.patch("/agendamentos/:id/reagendar", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.update);
 routes.patch("/agendamentos/:id/status", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.updateStatus);
 routes.patch("/agendamentos/:id/cancelar", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), agendamentoController.cancel); 
