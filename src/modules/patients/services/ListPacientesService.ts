@@ -9,7 +9,8 @@ export class ListPacientesService {
             .leftJoin(
                 qb => qb
                     .select("paciente_id")
-                    .addSelect("SUM(sessoes_restantes)", "total_sessoes")
+                    .addSelect("SUM(sessoes_restantes)", "total_restantes")
+                    .addSelect("SUM(sessoes_total)", "total_pacote")
                     .from("pacotes_pacientes", "pacote")
                     .where("status_pagamento = :status", { status: "pago" })
                     .groupBy("paciente_id"),
@@ -17,7 +18,8 @@ export class ListPacientesService {
                 "pacotes.paciente_id = paciente.id"
             )
             .addSelect("paciente.*")
-            .addSelect("COALESCE(pacotes.total_sessoes, 0)", "sessoes_restantes");
+            .addSelect("COALESCE(pacotes.total_restantes, 0)", "sessoes_restantes")
+            .addSelect("COALESCE(pacotes.total_pacote, 0)", "sessoes_total");
 
         if (clinica_id) {
             query.where("paciente.clinica_id = :clinica_id", { clinica_id });
@@ -34,7 +36,8 @@ export class ListPacientesService {
             endereco_completo: row.endereco_completo,
             valor_sessao: row.valor_sessao,
             clinica_id: row.clinica_id,
-            sessoes_restantes: Number(row.sessoes_restantes || 0)
+            sessoes_restantes: Number(row.sessoes_restantes || 0),
+            sessoes_total: Number(row.sessoes_total || 0)
         }));
     }
 }
