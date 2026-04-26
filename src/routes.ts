@@ -18,6 +18,7 @@ import { ReportController } from "./modules/clinics/controllers/ReportController
 import { RegistrationController } from "./modules/clinics/controllers/RegistrationController";
 import { GoogleCalendarController } from "./modules/appointments/controllers/GoogleCalendarController";
 import { ForgotPasswordController } from "./modules/users/controllers/ForgotPasswordController";
+import { KiwifyController } from "./modules/users/controllers/KiwifyController";
 
 // --- MIDDLEWARES E VALIDAÇÕES ---
 import { ensureAuthenticated } from "./shared/middlewares/ensureAuthenticated";
@@ -59,7 +60,8 @@ const anexoController = new AnexoController();
 const anamneseController = new AnamneseController();
 const reportController = new ReportController();
 const registrationController = new RegistrationController();
-const googleCalendarController = new GoogleCalendarController(); // Nova Instância
+const googleCalendarController = new GoogleCalendarController();
+const kiwifyController = new KiwifyController();
 
 // ==========================================
 // 🔓 ROTAS PÚBLICAS (Sem Token)
@@ -82,6 +84,7 @@ routes.post("/usuarios", validateRequest(createUserSchema), userController.creat
 routes.post("/clinicas", validateRequest(createClinicaSchema), clinicaController.create);
 routes.post("/login", sessionsController.create);
 routes.post("/signup/autonomo", validateRequest(createAutonomoSchema), registrationController.signupAutonomo);
+routes.post("/webhooks/kiwify", kiwifyController.handle);
 
 
 // ==========================================
