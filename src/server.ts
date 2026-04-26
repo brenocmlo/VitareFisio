@@ -2,11 +2,13 @@ import "reflect-metadata";
 import "dotenv/config";
 import express, { Request, Response } from "express";
 import cors from "cors";
+import { globalLimiter } from "./shared/middlewares/rateLimiter";
 import { AppDataSource } from "./data-source";
-import { routes } from "./routes"; // <-- IMPORTAÇÃO AQUI
+import { routes } from "./routes";
 
 const app = express();
 
+app.use(globalLimiter);
 app.use(cors());
 app.use(express.json());
 app.use(routes); // <-- USO DAS ROTAS AQUI

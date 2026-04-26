@@ -72,6 +72,9 @@
   "express": "^5.2.1",
   
     
+  "express-rate-limit": "^8.4.1",
+  
+    
   "googleapis": "^171.4.0",
   
     
@@ -82,6 +85,9 @@
   
     
   "mysql2": "^3.22.0",
+  
+    
+  "node-cache": "^5.1.2",
   
     
   "nodemailer": "^8.0.6",

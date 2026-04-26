@@ -24,6 +24,7 @@ import { KiwifyController } from "./modules/users/controllers/KiwifyController";
 import { ensureAuthenticated } from "./shared/middlewares/ensureAuthenticated";
 import { checkRole } from "./shared/middlewares/checkRole";
 import { validateRequest } from "./shared/middlewares/validateRequest";
+import { authLimiter } from "./shared/middlewares/rateLimiter";
 
 // --- SCHEMAS ---
 import { createUserSchema } from "./modules/users/schemas/createUserSchema";
@@ -78,12 +79,12 @@ routes.get("/debug-env", (req, res) => {
         node_env: process.env.NODE_ENV
     });
 });
-routes.post("/password/forgot", forgotPasswordController.send);
-routes.post("/password/reset", forgotPasswordController.reset);
-routes.post("/usuarios", validateRequest(createUserSchema), userController.create);
+routes.post("/password/forgot", authLimiter, forgotPasswordController.send);
+routes.post("/password/reset", authLimiter, forgotPasswordController.reset);
+routes.post("/usuarios", authLimiter, validateRequest(createUserSchema), userController.create);
 routes.post("/clinicas", validateRequest(createClinicaSchema), clinicaController.create);
-routes.post("/login", sessionsController.create);
-routes.post("/signup/autonomo", validateRequest(createAutonomoSchema), registrationController.signupAutonomo);
+routes.post("/login", authLimiter, sessionsController.create);
+routes.post("/signup/autonomo", authLimiter, validateRequest(createAutonomoSchema), registrationController.signupAutonomo);
 routes.post("/webhooks/kiwify", kiwifyController.handle);
 
 
