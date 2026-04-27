@@ -1,13 +1,15 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from "typeorm";
 
 @Entity("pacientes")
 export class Paciente {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Index()
     @Column()
     clinica_id: number;
 
+    @Index()
     @Column()
     nome: string;
 

@@ -24,12 +24,15 @@ export class PacienteController {
     // GET /pacientes
     async index(req: Request, res: Response) {
         try {
-            const { clinica_id } = req.query;
+            const { clinica_id, search, page, limit } = req.query;
             const listPacientesService = new ListPacientesService();
-            const pacientes = await listPacientesService.execute(
-                clinica_id ? Number(clinica_id) : undefined
+            const result = await listPacientesService.execute(
+                clinica_id ? Number(clinica_id) : undefined,
+                search ? String(search) : undefined,
+                page ? Number(page) : 1,
+                limit ? Number(limit) : 20
             );
-            return res.status(200).json(pacientes);
+            return res.status(200).json(result);
         } catch (error: any) {
             return res.status(400).json({ error: error.message });
         }

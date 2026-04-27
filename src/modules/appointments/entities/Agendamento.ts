@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from "typeorm";
 import { Paciente } from "../../patients/entities/Paciente";
 import { PacotePaciente } from "../../patients/entities/PacotePaciente";
 import { appointmentDateTimeTransformer } from "../utils/appointmentDateTime";
@@ -8,6 +8,7 @@ export class Agendamento {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Index()
     @Column({
         name: "data_hora_inicio",
         type: "timestamp", // Ajustado para Postgres
@@ -34,9 +35,11 @@ export class Agendamento {
     @Column()
     paciente_id: number;
 
+    @Index()
     @Column()
     clinica_id: number;
 
+    @Index()
     @Column()
     fisioterapeuta_id: number;
 
