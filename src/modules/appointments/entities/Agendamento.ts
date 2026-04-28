@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Index } from "typeorm";
 import { Paciente } from "../../patients/entities/Paciente";
 import { PacotePaciente } from "../../patients/entities/PacotePaciente";
-import { appointmentDateTimeTransformer } from "../utils/appointmentDateTime";
 
 @Entity("agendamentos")
 export class Agendamento {
@@ -11,16 +10,14 @@ export class Agendamento {
     @Index()
     @Column({
         name: "data_hora_inicio",
-        type: "timestamp", // Ajustado para Postgres
-        transformer: appointmentDateTimeTransformer,
+        type: "timestamptz",
     })
-    data_hora: string;
+    data_hora: Date;
 
     @Column({
-        type: "timestamp", // Ajustado para Postgres
-        transformer: appointmentDateTimeTransformer,
+        type: "timestamptz",
     })
-    data_hora_fim: string;
+    data_hora_fim: Date;
     
     @Column({ 
         type: "enum", 

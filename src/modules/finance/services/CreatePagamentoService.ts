@@ -61,16 +61,37 @@ export class CreatePagamentoService {
 
         // 2. Se for um Pacote, cria o registro na tabela pacotes_pacientes
         if (is_pacote && quantidade_sessoes > 0) {
+            let sessoes_restantes = quantidade_sessoes;
+            let agendamentoConsumido: Agendamento | null = null;
+
+            // Se informou agendamento, verifica se deve consumir sessão imediatamente
+            if (agendamento_id) {
+                const agendamentoRepo = AppDataSource.getRepository(Agendamento);
+                const agendamento = await agendamentoRepo.findOneBy({ id: agendamento_id });
+                
+                if (agendamento && agendamento.status === "realizado" && status === "pago") {
+                    sessoes_restantes -= 1;
+                    agendamentoConsumido = agendamento;
+                }
+            }
+
             const pacote = pacoteRepo.create({
                 paciente_id,
                 clinica_id,
                 sessoes_total: quantidade_sessoes,
-                sessoes_restantes: quantidade_sessoes,
-                data_validade: addDays(new Date(), 90), // Validade padrão: 90 dias
+                sessoes_restantes,
+                data_validade: addDays(new Date(), 90),
                 status_pagamento: status === "pago" ? "pago" : "pendente"
             });
 
-            await pacoteRepo.save(pacote);
+            const savedPacote = await pacoteRepo.save(pacote);
+
+            // Vincula o agendamento se ele consumiu a sessão
+            if (agendamentoConsumido) {
+                const agendamentoRepo = AppDataSource.getRepository(Agendamento);
+                agendamentoConsumido.pacote_paciente_id = savedPacote.id;
+                await agendamentoRepo.save(agendamentoConsumido);
+            }
         }
 
         return pagamento;

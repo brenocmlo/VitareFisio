@@ -10,7 +10,7 @@ export class AuthenticateUserService {
         // ADICIONADO: "tipo" no select
         const usuario = await usuarioRepository.findOne({
             where: { email },
-            select: ["id", "nome", "email", "senha", "clinica_id", "tipo"] 
+            select: ["id", "nome", "email", "senha", "clinica_id", "tipo", "is_autonomo"] 
         });
 
         if (!usuario) {
@@ -23,10 +23,11 @@ export class AuthenticateUserService {
             throw new Error("E-mail ou senha incorretos.");
         }
 
-        // ADICIONADO: "tipo" no payload do token
+        // ADICIONADO: "tipo" e "is_autonomo" no payload do token
         const token = sign({ 
             clinica_id: usuario.clinica_id,
-            tipo: usuario.tipo
+            tipo: usuario.tipo,
+            is_autonomo: usuario.is_autonomo
         }, process.env.JWT_SECRET || "segredo-vitarefisio-2026", {
             subject: String(usuario.id),
             expiresIn: "1d",
@@ -38,7 +39,8 @@ export class AuthenticateUserService {
                 nome: usuario.nome,
                 email: usuario.email,
                 clinica_id: usuario.clinica_id,
-                tipo: usuario.tipo // <-- ADICIONADO para o Frontend usar
+                tipo: usuario.tipo,
+                is_autonomo: usuario.is_autonomo
             },
             token,
         };

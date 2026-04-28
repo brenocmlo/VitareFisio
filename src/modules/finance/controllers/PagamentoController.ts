@@ -59,8 +59,14 @@ export class PagamentoController {
                 clinicaIdResolvido = 1;
             }
 
+            const { mes, ano } = req.query;
+
             const listPagamentosService = new ListPagamentosService();
-            const pagamentos = await listPagamentosService.execute(clinicaIdResolvido);
+            const pagamentos = await listPagamentosService.execute(
+                clinicaIdResolvido,
+                mes ? Number(mes) : undefined,
+                ano ? Number(ano) : undefined
+            );
 
             return res.status(200).json(pagamentos);
         } catch (error: any) {

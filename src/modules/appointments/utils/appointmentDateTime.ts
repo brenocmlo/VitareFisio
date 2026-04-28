@@ -2,7 +2,7 @@ import { ValueTransformer } from "typeorm";
 
 const CLINIC_TIME_ZONE = process.env.APP_TIMEZONE || "America/Sao_Paulo";
 const LOCAL_DATE_TIME_REGEX =
-    /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?$/;
+    /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?(\.\d+)?.*$/;
 const DATE_ONLY_REGEX = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 interface IDateParts {

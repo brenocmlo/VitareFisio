@@ -5,6 +5,7 @@ interface TokenPayload {
     sub: string;
     clinica_id: number;
     tipo: string;
+    is_autonomo: boolean;
     iat: number;
     exp: number;
 }
@@ -36,12 +37,13 @@ export function ensureAuthenticated(
 
         const decoded = verify(token, jwtSecret) as TokenPayload;
 
-        const { sub, tipo, clinica_id } = decoded;
+        const { sub, tipo, clinica_id, is_autonomo } = decoded;
 
         req.user = {
             id: sub,
             tipo: tipo,
             clinica_id: Number(clinica_id),
+            is_autonomo: !!is_autonomo,
         };
 
         return next();

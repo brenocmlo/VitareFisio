@@ -45,11 +45,11 @@ export class SyncGoogleCalendarService {
           summary: `Atendimento: ${agendamento.paciente.nome}`,
           description: agendamento.observacoes || "Atendimento agendado via VitareFisio.",
           start: {
-            dateTime: new Date(agendamento.data_hora).toISOString(),
+            dateTime: agendamento.data_hora.toISOString(),
             timeZone: 'America/Sao_Paulo',
           },
           end: {
-            dateTime: new Date(agendamento.data_hora_fim).toISOString(),
+            dateTime: agendamento.data_hora_fim.toISOString(),
             timeZone: 'America/Sao_Paulo',
           },
         },
@@ -93,11 +93,11 @@ export class SyncGoogleCalendarService {
           summary: `Atendimento: ${agendamento.paciente.nome}`,
           description: agendamento.observacoes || "Atendimento agendado via VitareFisio.",
           start: {
-            dateTime: new Date(agendamento.data_hora).toISOString(),
+            dateTime: agendamento.data_hora.toISOString(),
             timeZone: 'America/Sao_Paulo',
           },
           end: {
-            dateTime: new Date(agendamento.data_hora_fim).toISOString(),
+            dateTime: agendamento.data_hora_fim.toISOString(),
             timeZone: 'America/Sao_Paulo',
           },
         },

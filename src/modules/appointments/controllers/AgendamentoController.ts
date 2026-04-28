@@ -46,18 +46,21 @@ export class AgendamentoController {
             // --- CAPTURANDO OS NOVOS FILTROS DA URL ---
             const { data, mes, ano, fisioterapeuta_id } = req.query;
             
-            // Prioridade para o ID que vem na query, se não, usa o do usuário logado
+            const { clinica_id, is_autonomo } = req.user as any;
             const fisioId = fisioterapeuta_id ? Number(fisioterapeuta_id) : req.user?.id;
 
             const listAgendamentosService = new ListAgendamentosService();
             
-            // Passamos o objeto completo com os filtros para o Service
             const agendamentos = await listAgendamentosService.execute({
                 data: data as string,
                 mes: mes as string,
                 ano: ano as string,
-                fisioterapeuta_id: Number(fisioId)
+                fisioterapeuta_id: Number(fisioId),
+                clinica_id: Number(clinica_id),
+                is_autonomo: !!is_autonomo
             });
+
+            console.log(`🔍 Buscando agendamentos: fisio=${fisioId}, clinica=${clinica_id}, data=${data}, total=${agendamentos.length}`);
 
             return res.status(200).json(agendamentos);
         } catch (error: any) {

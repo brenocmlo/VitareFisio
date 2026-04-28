@@ -34,8 +34,9 @@ export class UpdateAgendamentoStatusService {
 
             // =====================================================
             // REGRA DE NEGÓCIO: DÉBITO DE SESSÕES OU COBRANÇA AVULSA
-            // Só executa se o status mudou DE algo PARA "realizado"
             // =====================================================
+            
+            // CASO A: Mudou PARA "realizado" (Consumir sessão)
             if (status === "realizado" && statusAnterior !== "realizado") {
                 
                 // 1. Verifica se já foi faturado como avulso antes
@@ -43,11 +44,7 @@ export class UpdateAgendamentoStatusService {
                     where: { agendamento_id: agendamento.id }
                 });
 
-                // 2. Verifica se a sessão já foi deduzida de um pacote 
-                // (Recomendação: Adicione a coluna 'pacote_id_utilizado' ou 'sessao_deduzida' (boolean) na entidade Agendamento no futuro)
-                // Se o seu Agendamento não tem isso ainda, vamos usar uma lógica de segurança extra aqui
-                
-                if (!jaFaturadoAvulso) {
+                if (!jaFaturadoAvulso && !agendamento.pacote_paciente_id) {
                     // Busca o pacote ativo mais antigo com sessões disponíveis
                     const pacoteAtivo = await transactionalEntityManager.findOne(PacotePaciente, {
                         where: {
@@ -63,8 +60,9 @@ export class UpdateAgendamentoStatusService {
                         pacoteAtivo.sessoes_restantes -= 1;
                         await transactionalEntityManager.save(pacoteAtivo);
                         
-                        // TODO (Próximo Passo): Idealmente salvar agendamento.pacote_id_utilizado = pacoteAtivo.id
-                        // await transactionalEntityManager.save(agendamento);
+                        // Vincula o agendamento ao pacote para rastreabilidade
+                        agendamento.pacote_paciente_id = pacoteAtivo.id;
+                        await transactionalEntityManager.save(agendamento);
 
                     } else {
                         // 💳 DÉBITO AVULSO: cria cobrança pendente
@@ -75,9 +73,41 @@ export class UpdateAgendamentoStatusService {
                             valor: 150.00, // TODO: substituir pelo valor configurável da clínica
                             metodo_pagamento: "pix",
                             status: "pendente",
-                            data_pagamento: new Date() // Fica a data atual como registro da criação
+                            data_pagamento: new Date()
                         });
                         await transactionalEntityManager.save(pagamento);
+                    }
+                }
+            }
+            
+            // CASO B: Mudou DE "realizado" PARA OUTRO (Estornar sessão)
+            else if (statusAnterior === "realizado" && status !== "realizado") {
+                // Se foi usado um pacote, devolve a sessão
+                if (agendamento.pacote_paciente_id) {
+                    const pacote = await transactionalEntityManager.findOne(PacotePaciente, {
+                        where: { id: agendamento.pacote_paciente_id }
+                    });
+
+                    if (pacote) {
+                        pacote.sessoes_restantes += 1;
+                        await transactionalEntityManager.save(pacote);
+                    }
+
+                    // Remove o vínculo do pacote no agendamento
+                    agendamento.pacote_paciente_id = null as any;
+                    await transactionalEntityManager.save(agendamento);
+                } 
+                // Se foi gerado um pagamento avulso pendente, removemos
+                else {
+                    const pagamentoPendente = await transactionalEntityManager.findOne(Pagamento, {
+                        where: { 
+                            agendamento_id: agendamento.id,
+                            status: "pendente" 
+                        }
+                    });
+
+                    if (pagamentoPendente) {
+                        await transactionalEntityManager.remove(pagamentoPendente);
                     }
                 }
             }
