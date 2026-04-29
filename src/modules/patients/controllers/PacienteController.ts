@@ -24,10 +24,13 @@ export class PacienteController {
     // GET /pacientes
     async index(req: Request, res: Response) {
         try {
-            const { clinica_id, search, page, limit } = req.query;
+            const { search, page, limit } = req.query;
+            // 🔒 SEGURANÇA: clinica_id sempre vem do token JWT, nunca da URL
+            const { clinica_id } = req.user;
+
             const listPacientesService = new ListPacientesService();
             const result = await listPacientesService.execute(
-                clinica_id ? Number(clinica_id) : undefined,
+                Number(clinica_id),
                 search ? String(search) : undefined,
                 page ? Number(page) : 1,
                 limit ? Number(limit) : 20
