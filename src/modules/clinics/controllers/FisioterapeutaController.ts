@@ -38,7 +38,7 @@ export class FisioterapeutaController {
             const requesting_user_id = req.user.id;
             const service = new DeleteFisioterapeutaService();
             
-            await service.execute(Number(id), requesting_user_id);
+            await service.execute(Number(id), Number(requesting_user_id));
             
             return res.status(204).send(); // 204: Sucesso, mas sem conteúdo para retornar
         } catch (error: any) {
