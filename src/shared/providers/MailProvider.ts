@@ -8,9 +8,24 @@ export default class MailProvider {
   }
 
   private async setup() {
+    if (process.env.RESEND_API_KEY) {
+      // Usando Resend SMTP em produção
+      this.client = nodemailer.createTransport({
+        host: 'smtp.resend.com',
+        port: 465,
+        secure: true,
+        auth: {
+          user: 'resend',
+          pass: process.env.RESEND_API_KEY,
+        },
+      });
+      return;
+    }
+
+    // Fallback para conta de teste local (Ethereal)
     const account = await nodemailer.createTestAccount();
 
-    const transporter = nodemailer.createTransport({
+    this.client = nodemailer.createTransport({
       host: account.smtp.host,
       port: account.smtp.port,
       secure: account.smtp.secure,
@@ -19,21 +34,25 @@ export default class MailProvider {
         pass: account.pass,
       },
     });
-
-    this.client = transporter;
   }
 
   public async sendMail(to: string, body: string) {
     if (!this.client) await this.setup();
 
+    const sender = process.env.RESEND_API_KEY 
+      ? (process.env.EMAIL_FROM || 'onboarding@resend.dev')
+      : 'Equipe VitareFisio <equipe@vitarefisio.com.br>';
+
     const message = await this.client.sendMail({
-      from: 'Equipe VitareFisio <equipe@vitarefisio.com.br>',
+      from: sender,
       to,
       subject: 'Recuperação de Senha - VitareFisio',
       html: body,
     });
 
-    console.log('✉️ E-mail enviado: %s', message.messageId);
-    console.log('🔗 Link de visualização: %s', nodemailer.getTestMessageUrl(message));
+    console.log('✉️ E-mail enviado para: %s', to);
+    if (!process.env.RESEND_API_KEY) {
+      console.log('🔗 Link de visualização (Teste Local): %s', nodemailer.getTestMessageUrl(message));
+    }
   }
 }
