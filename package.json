@@ -54,7 +54,16 @@
   "dependencies": {
   
     
+  "@abacatepay/express": "^1.0.2",
+  
+    
+  "@abacatepay/sdk": "^1.2.0",
+  
+    
   "@supabase/supabase-js": "^2.104.1",
+  
+    
+  "abacatepay-nodejs-sdk": "^1.6.0",
   
     
   "bcryptjs": "^3.0.3",
