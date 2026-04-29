@@ -33,22 +33,22 @@ export class GetDashboardMetricsService {
 
         // --- 3. MÉTRICAS DO DIA ---
         const agendamentosHoje = await agendamentoRepo.count({
-            where: { clinica_id, data_hora: Between(inicioDoDia, fimDoDia), status: In(["agendado", "confirmado"]) }
+            where: { clinica_id, data_hora: Between(new Date(inicioDoDia), new Date(fimDoDia)), status: In(["agendado", "confirmado"]) as any }
         });
 
         const proximosAtendimentos = await agendamentoRepo.find({
-            where: { clinica_id, data_hora: Between(agoraLocal, fimDoDia), status: In(["agendado", "confirmado"]) },
+            where: { clinica_id, data_hora: Between(new Date(agoraLocal), new Date(fimDoDia)), status: In(["agendado", "confirmado"]) as any },
             order: { data_hora: "ASC" },
             take: 5
         });
 
         // --- 4. MÉTRICAS MENSAIS (SESSÕES E FALTAS) ---
         const sessoesRealizadasMes = await agendamentoRepo.count({
-            where: { clinica_id, data_hora: Between(primeiroDiaDoMes, ultimoDiaDoMes), status: "realizado" }
+            where: { clinica_id, data_hora: Between(new Date(primeiroDiaDoMes), new Date(ultimoDiaDoMes)), status: "realizado" as any }
         });
 
         const faltasCancelamentosMes = await agendamentoRepo.count({
-            where: { clinica_id, data_hora: Between(primeiroDiaDoMes, ultimoDiaDoMes), status: In(["faltou", "cancelado"]) }
+            where: { clinica_id, data_hora: Between(new Date(primeiroDiaDoMes), new Date(ultimoDiaDoMes)), status: In(["faltou", "cancelado"]) as any }
         });
 
         const totalAgendamentosMes = sessoesRealizadasMes + faltasCancelamentosMes;

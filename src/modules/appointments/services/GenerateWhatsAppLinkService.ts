@@ -34,8 +34,11 @@ export class GenerateWhatsAppLinkService {
         const nomeFisio = fisioterapeuta ? fisioterapeuta.nome : "da VitareFisio";
 
         // 4. Formata a Data e Hora para o padrão brasileiro/português
-        const dataFormatada = formatAppointmentDate(agendamento.data_hora);
-        const horaFormatada = formatAppointmentTime(agendamento.data_hora);
+        const dataHoraStr = agendamento.data_hora instanceof Date
+            ? agendamento.data_hora.toISOString()
+            : String(agendamento.data_hora);
+        const dataFormatada = formatAppointmentDate(dataHoraStr);
+        const horaFormatada = formatAppointmentTime(dataHoraStr);
 
         // 5. Montagem da mensagem personalizada solicitada pelo usuário
         const mensagem = `Olá, ${paciente.nome}! Aqui é ${nomeFisio}. Passando para lembrar da sua sessão de fisioterapia agendada para o dia *${dataFormatada}* às *${horaFormatada}*. Por favor, responda 'SIM' para confirmar ou 'NÃO' caso precise reagendar.`;

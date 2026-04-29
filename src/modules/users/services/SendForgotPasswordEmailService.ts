@@ -27,7 +27,8 @@ export class SendForgotPasswordEmailService {
         await userTokenRepository.save(userToken);
 
         // Envia o e-mail (O link apontará para o seu frontend)
-        const resetPasswordUrl = `http://localhost:5173/reset-password?token=${token}`;
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const resetPasswordUrl = `${frontendUrl}/reset-password?token=${token}`;
 
         await mailProvider.sendMail(
             email,

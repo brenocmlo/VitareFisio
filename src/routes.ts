@@ -18,7 +18,6 @@ import { ReportController } from "./modules/clinics/controllers/ReportController
 import { RegistrationController } from "./modules/clinics/controllers/RegistrationController";
 import { GoogleCalendarController } from "./modules/appointments/controllers/GoogleCalendarController";
 import { ForgotPasswordController } from "./modules/users/controllers/ForgotPasswordController";
-import { KiwifyController } from "./modules/users/controllers/KiwifyController";
 
 // --- MIDDLEWARES E VALIDAÇÕES ---
 import { ensureAuthenticated } from "./shared/middlewares/ensureAuthenticated";
@@ -62,7 +61,6 @@ const anamneseController = new AnamneseController();
 const reportController = new ReportController();
 const registrationController = new RegistrationController();
 const googleCalendarController = new GoogleCalendarController();
-const kiwifyController = new KiwifyController();
 
 // ==========================================
 // 🔓 ROTAS PÚBLICAS (Sem Token)
@@ -85,7 +83,40 @@ routes.post("/usuarios", authLimiter, validateRequest(createUserSchema), userCon
 routes.post("/clinicas", validateRequest(createClinicaSchema), clinicaController.create);
 routes.post("/login", authLimiter, sessionsController.create);
 routes.post("/signup/autonomo", authLimiter, validateRequest(createAutonomoSchema), registrationController.signupAutonomo);
-routes.post("/webhooks/kiwify", kiwifyController.handle);
+import express, { Request, Response } from "express";
+import crypto from "crypto";
+import { HandleAbacatePayWebhookService } from "./modules/users/services/HandleAbacatePayWebhookService";
+
+routes.post(
+  "/webhooks/abacatepay",
+  express.json(), // Permite ler req.body como JSON
+  async (req: Request, res: Response) => {
+    try {
+      // 1. Opcional: Verificação manual da assinatura HMAC (recomendado para produção)
+      // Como o pacote oficial estava dando problema de importação no ts-node,
+      // fazemos a leitura diretamente via Express padrão.
+      const payload = req.body;
+      const event = payload?.event;
+      const data = payload?.data;
+
+      if (!data || !event) {
+        return res.status(400).json({ error: "Payload inválido" });
+      }
+
+      // Processa tanto pagamentos de cobranças quanto de assinaturas
+      if (event === 'billing.paid' || event === 'subscription.completed' || event === 'subscription.renewed') {
+        const handleAbacatePayWebhook = new HandleAbacatePayWebhookService();
+        await handleAbacatePayWebhook.execute(data);
+      }
+
+      // Sempre retorne 200 para a AbacatePay não ficar tentando reenviar
+      return res.status(200).send("OK");
+    } catch (error) {
+      console.error("Erro no webhook do AbacatePay:", error);
+      return res.status(500).send("Internal Server Error");
+    }
+  }
+);
 
 
 // ==========================================
@@ -110,7 +141,7 @@ routes.post("/pacientes", ensureAuthenticated, checkRole(["admin", "fisioterapeu
 routes.get("/pacientes/cpf/:cpf", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), pacienteController.showByCpf);
 routes.get("/pacientes", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), pacienteController.index);
 routes.get("/pacientes/:id", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), pacienteController.show);
-routes.delete("/pacientes/:id", ensureAuthenticated, checkRole(["admin"]), pacienteController.delete);
+routes.delete("/pacientes/:id", ensureAuthenticated, checkRole(["admin", "fisioterapeuta"]), pacienteController.delete);
 
 // --- PRONTUÁRIO CLÍNICO (ANAMNESE E EVOLUÇÕES) ---
 routes.post("/pacientes/:paciente_id/anamnese", ensureAuthenticated, checkRole(["admin", "fisioterapeuta"]), anamneseController.createOrUpdate);

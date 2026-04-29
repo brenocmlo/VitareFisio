@@ -4,6 +4,7 @@ declare namespace Express {
             id: string;
             tipo: string;
             clinica_id: number;
+            is_autonomo: boolean;
         };
     }
 }

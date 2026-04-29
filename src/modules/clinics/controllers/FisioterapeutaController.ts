@@ -35,9 +35,10 @@ export class FisioterapeutaController {
     async delete(req: Request, res: Response) {
         try {
             const { id } = req.params;
+            const requesting_user_id = req.user.id;
             const service = new DeleteFisioterapeutaService();
             
-            await service.execute(Number(id));
+            await service.execute(Number(id), requesting_user_id);
             
             return res.status(204).send(); // 204: Sucesso, mas sem conteúdo para retornar
         } catch (error: any) {

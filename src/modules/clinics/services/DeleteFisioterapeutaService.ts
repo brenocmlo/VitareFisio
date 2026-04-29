@@ -3,10 +3,16 @@ import { Usuario } from "../../users/entities/Usuario";
 import { Fisioterapeuta } from "../entities/Fisioterapeuta"; 
 
 export class DeleteFisioterapeutaService {
-    async execute(id: number): Promise<void> {
+    async execute(id: number, requesting_user_id: number): Promise<void> {
         const fisioRepository = AppDataSource.getRepository(Fisioterapeuta);
         const usuarioRepository = AppDataSource.getRepository(Usuario);
         
+        // Verifica se quem está pedindo para deletar é o dono do sistema (is_autonomo)
+        const requestingUser = await usuarioRepository.findOne({ where: { id: requesting_user_id } });
+        if (!requestingUser || !requestingUser.is_autonomo) {
+            throw new Error("Apenas o administrador principal (dono do sistema) pode remover membros da equipe.");
+        }
+
         // 1. Busca o perfil do fisioterapeuta pelo ID que veio do clique na lixeira
         const fisioterapeuta = await fisioRepository.findOne({
             where: { id }
