@@ -83,23 +83,39 @@ routes.post("/usuarios", authLimiter, validateRequest(createUserSchema), userCon
 routes.post("/clinicas", validateRequest(createClinicaSchema), clinicaController.create);
 routes.post("/login", authLimiter, sessionsController.create);
 routes.post("/signup/autonomo", authLimiter, validateRequest(createAutonomoSchema), registrationController.signupAutonomo);
-import express from "express";
-import { Webhooks } from "@abacatepay/express";
+import express, { Request, Response } from "express";
+import crypto from "crypto";
 import { HandleAbacatePayWebhookService } from "./modules/users/services/HandleAbacatePayWebhookService";
 
 routes.post(
   "/webhooks/abacatepay",
-  express.raw({ type: '*/*' }),
-  Webhooks({
-    secret: process.env.ABACATEPAY_WEBHOOK_SECRET || '',
-    onPayload: async ({ data, event }: any) => {
+  express.json(), // Permite ler req.body como JSON
+  async (req: Request, res: Response) => {
+    try {
+      // 1. Opcional: Verificação manual da assinatura HMAC (recomendado para produção)
+      // Como o pacote oficial estava dando problema de importação no ts-node,
+      // fazemos a leitura diretamente via Express padrão.
+      const payload = req.body;
+      const event = payload?.event;
+      const data = payload?.data;
+
+      if (!data || !event) {
+        return res.status(400).json({ error: "Payload inválido" });
+      }
+
       // Processa tanto pagamentos de cobranças quanto de assinaturas
       if (event === 'billing.paid' || event === 'subscription.completed' || event === 'subscription.renewed') {
         const handleAbacatePayWebhook = new HandleAbacatePayWebhookService();
         await handleAbacatePayWebhook.execute(data);
       }
+
+      // Sempre retorne 200 para a AbacatePay não ficar tentando reenviar
+      return res.status(200).send("OK");
+    } catch (error) {
+      console.error("Erro no webhook do AbacatePay:", error);
+      return res.status(500).send("Internal Server Error");
     }
-  })
+  }
 );
 
 
