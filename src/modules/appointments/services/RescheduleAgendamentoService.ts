@@ -25,14 +25,14 @@ export class RescheduleAgendamentoService {
         const dataAgendamento = normalizeAppointmentDateTime(nova_data_hora);
 
         // 2. Verificar conflito de horário (considerando margem de 1h)
-        const dataInicio = addMinutesToAppointmentDateTime(dataAgendamento, -59);
-        const dataFim = addMinutesToAppointmentDateTime(dataAgendamento, 59);
+        const dataInicio = new Date(addMinutesToAppointmentDateTime(dataAgendamento, -59));
+        const dataFim = new Date(addMinutesToAppointmentDateTime(dataAgendamento, 59));
 
         const conflito = await agendamentoRepository.findOne({
             where: {
-                id: Not(agendamento_id), // Ignora o próprio agendamento na verificação
+                id: Not(agendamento_id),
                 fisioterapeuta_id: agendamento.fisioterapeuta_id,
-                status: Not("cancelado"),
+                status: Not("cancelado") as any,
                 data_hora: Between(dataInicio, dataFim)
             }
         });
@@ -42,8 +42,8 @@ export class RescheduleAgendamentoService {
         }
 
         // 3. Atualizar data e resetar status
-        agendamento.data_hora = dataAgendamento;
-        agendamento.data_hora_fim = addMinutesToAppointmentDateTime(dataAgendamento, 60);
+        agendamento.data_hora = new Date(dataAgendamento);
+        agendamento.data_hora_fim = new Date(addMinutesToAppointmentDateTime(dataAgendamento, 60));
         agendamento.status = "agendado"; 
 
         await agendamentoRepository.save(agendamento);
