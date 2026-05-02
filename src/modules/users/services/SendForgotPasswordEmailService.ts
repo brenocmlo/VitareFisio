@@ -36,12 +36,12 @@ export class SendForgotPasswordEmailService {
             <div style="font-family: sans-serif; color: #333;">
                 <h2>Recuperação de Senha</h2>
                 <p>Olá, ${user.nome}!</p>
-                <p>Recebemos uma solicitação para redefinir sua senha no sistema VitareFisio.</p>
+                <p>Recebemos uma solicitação para redefinir sua senha no sistema SomosFisio.</p>
                 <p>Clique no link abaixo para escolher uma nova senha:</p>
                 <a href="${resetPasswordUrl}" style="display: inline-block; padding: 10px 20px; background-color: #0ea5e9; color: #fff; text-decoration: none; border-radius: 8px;">Redefinir Minha Senha</a>
                 <p>Se você não solicitou essa alteração, basta ignorar este e-mail.</p>
                 <br/>
-                <p>Atenciosamente,<br/>Equipe VitareFisio</p>
+                <p>Atenciosamente,<br/>Equipe SomosFisio</p>
             </div>
             `
         );

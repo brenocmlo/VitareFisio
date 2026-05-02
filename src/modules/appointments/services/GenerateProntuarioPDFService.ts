@@ -24,7 +24,7 @@ export class GenerateProntuarioPDFService {
             doc.on("end", () => resolve(Buffer.concat(chunks)));
 
             // --- Cabeçalho ---
-            doc.fontSize(20).text("VitareFisio - Prontuário Clínico", { align: "center" });
+            doc.fontSize(20).text("SomosFisio - Prontuário Clínico", { align: "center" });
             doc.moveDown();
             doc.fontSize(12).text(`Paciente: ${paciente.nome}`);
             doc.text(`CPF: ${paciente.cpf}`);

@@ -41,12 +41,12 @@ export default class MailProvider {
 
     const sender = process.env.RESEND_API_KEY 
       ? (process.env.EMAIL_FROM || 'onboarding@resend.dev')
-      : 'Equipe VitareFisio <equipe@vitarefisio.com.br>';
+      : 'Equipe SomosFisio <equipe@vitarefisio.com.br>';
 
     const message = await this.client.sendMail({
       from: sender,
       to,
-      subject: 'Recuperação de Senha - VitareFisio',
+      subject: 'Recuperação de Senha - SomosFisio',
       html: body,
     });
 

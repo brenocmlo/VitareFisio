@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { AppDataSource } from "../../../data-source";
 import { Usuario } from "../entities/Usuario";
 import { CreateAutonomoService } from "../../clinics/services/CreateAutonomoService";
-import { SendForgotPasswordEmailService } from "./SendForgotPasswordEmailService";
+import { SendWelcomeEmailService } from "./SendWelcomeEmailService";
 
 export class HandleAbacatePayWebhookService {
   async execute(data: any) {
@@ -50,9 +50,9 @@ export class HandleAbacatePayWebhookService {
 
     console.log(`Conta criada com sucesso para ${customer.email} via AbacatePay.`);
 
-    // Disparar fluxo de "Primeiro Acesso / Redefinir Senha" para o e-mail
-    const sendForgotPasswordEmail = new SendForgotPasswordEmailService();
-    await sendForgotPasswordEmail.execute(customer.email);
+    // Disparar e-mail de boas-vindas com link de ativação de conta
+    const sendWelcomeEmail = new SendWelcomeEmailService();
+    await sendWelcomeEmail.execute(customer.email);
 
     return { message: "Conta criada e e-mail de ativação enviado." };
   }
