@@ -17,10 +17,6 @@ type CreateAutonomousWorkspaceInput = {
   expirationDate: Date;
 };
 
-type RenewUserAccessInput = {
-  email: string;
-  newExpirationDate: Date;
-};
 
 export class ProcessAbacatePayWebhookService {
   async execute(payload: IAbacatePayWebhook): Promise<void> {
@@ -158,12 +154,6 @@ export class ProcessAbacatePayWebhookService {
     if (planCycle === "MONTHLY") return addDays(base, 30);
     if (planCycle === "SEMIANNUALLY") return addMonths(base, 6);
     return addYears(base, 1);
-  }
-
-  private async checkIfUserExists(email: string): Promise<boolean> {
-    const userRepository = AppDataSource.getRepository(Usuario);
-    const user = await userRepository.findOne({ where: { email }, select: ["id"] as any });
-    return !!user;
   }
 
   private async getUserByEmail(email: string): Promise<Usuario | null> {

@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import "dotenv/config";
-import express, { Request, Response } from "express";
+import express from "express";
 import cors from "cors";
 import { globalLimiter } from "./shared/middlewares/rateLimiter";
 import { AppDataSource } from "./data-source";

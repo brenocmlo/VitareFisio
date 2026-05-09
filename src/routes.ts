@@ -68,10 +68,10 @@ const abacatePayWebhookController = new AbacatePayWebhookController();
 // ==========================================
 // 🔓 ROTAS PÚBLICAS (Sem Token)
 // ==========================================
-routes.get("/", (req, res) => res.json({ message: "VitareFisio API está online! 🚀" }));
+routes.get("/", (_, res) => res.json({ message: "VitareFisio API está online! 🚀" }));
 
 // ROTA DE DIAGNÓSTICO (Remova após resolver o problema)
-routes.get("/debug-env", (req, res) => {
+routes.get("/debug-env", (_, res) => {
     res.json({
         has_client_id: !!process.env.GOOGLE_CLIENT_ID,
         has_client_secret: !!process.env.GOOGLE_CLIENT_SECRET,

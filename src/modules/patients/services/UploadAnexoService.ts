@@ -23,7 +23,7 @@ export class UploadAnexoService {
     const fileName = `${paciente_id}/${Date.now()}.${fileExt}`;
 
     // 2. Enviar para o Bucket 'anexos' no Supabase
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('anexos') // Nome do bucket que você criou no painel
       .upload(fileName, file.buffer, {
         contentType: file.mimetype,

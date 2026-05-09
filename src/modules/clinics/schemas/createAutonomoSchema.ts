@@ -32,6 +32,6 @@ export const createAutonomoSchema = z.object({
                 : "O CREFITO deve ser um texto válido."
     }),
     telefone: z.string({
-        error: (issue) => "O telefone deve ser um texto válido."
+        error: () => "O telefone deve ser um texto válido."
     }).optional(),
 });
