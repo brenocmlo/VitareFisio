@@ -20,6 +20,7 @@ import { RegistrationController } from "./modules/clinics/controllers/Registrati
 import { GoogleCalendarController } from "./modules/appointments/controllers/GoogleCalendarController";
 import { ForgotPasswordController } from "./modules/users/controllers/ForgotPasswordController";
 import { AbacatePayWebhookController } from "./modules/users/controllers/AbacatePayWebhookController";
+import { KiwifyWebhookController } from "./modules/users/controllers/KiwifyWebhookController";
 
 // --- MIDDLEWARES E VALIDAÇÕES ---
 import { ensureAuthenticated } from "./shared/middlewares/ensureAuthenticated";
@@ -64,6 +65,7 @@ const reportController = new ReportController();
 const registrationController = new RegistrationController();
 const googleCalendarController = new GoogleCalendarController();
 const abacatePayWebhookController = new AbacatePayWebhookController();
+const kiwifyWebhookController = new KiwifyWebhookController();
 
 // ==========================================
 // 🔓 ROTAS PÚBLICAS (Sem Token)
@@ -90,6 +92,12 @@ routes.post(
   "/webhooks/abacatepay",
   express.raw({ type: "application/json" }),
   abacatePayWebhookController.handle
+);
+
+routes.post(
+  "/webhooks/kiwify",
+  express.raw({ type: "application/json" }),
+  kiwifyWebhookController.handle
 );
 
 
