@@ -10,6 +10,7 @@ interface IRequest {
     endereco_completo?: string;
     convenio_nome?: string;
     valor_sessao?: number;
+    usuario_id: number; // 🔒 RLS
 }
 
 export class CreatePacienteService {

@@ -2,7 +2,7 @@ import { AppDataSource } from "../../../data-source";
 import { Paciente } from "../entities/Paciente";
 
 export class ListPacientesService {
-    async execute(clinica_id?: number, search?: string, page = 1, limit = 20): Promise<{ data: any[], total: number }> {
+    async execute(clinica_id?: number, usuario_id?: number, search?: string, page = 1, limit = 20): Promise<{ data: any[], total: number }> {
         const pacienteRepository = AppDataSource.getRepository(Paciente);
  
         const query = pacienteRepository.createQueryBuilder("paciente")
@@ -31,6 +31,10 @@ export class ListPacientesService {
  
         if (clinica_id) {
             query.andWhere("paciente.clinica_id = :clinica_id", { clinica_id });
+        }
+
+        if (usuario_id) {
+            query.andWhere("paciente.usuario_id = :usuario_id", { usuario_id }); // 🔒 RLS
         }
 
         if (search) {

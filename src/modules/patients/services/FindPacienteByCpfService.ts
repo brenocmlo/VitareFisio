@@ -4,17 +4,19 @@ import { Paciente } from "../entities/Paciente";
 interface IRequest {
     cpf: string;
     clinica_id: number;
+    usuario_id: number; // 🔒 RLS
 }
 
 export class FindPacienteByCpfService {
-    async execute({ cpf, clinica_id }: IRequest): Promise<Paciente | null> {
+    async execute({ cpf, clinica_id, usuario_id }: IRequest): Promise<Paciente | null> {
         const pacienteRepository = AppDataSource.getRepository(Paciente);
 
-        // Busca o paciente apenas se ele pertencer à clínica de quem está logado
+        // Busca o paciente apenas se ele pertencer ao usuário logado (RLS)
         const paciente = await pacienteRepository.findOne({
             where: { 
                 cpf,
-                clinica_id 
+                clinica_id,
+                usuario_id
             }
         });
 

@@ -10,16 +10,18 @@ import { Pagamento } from "../../finance/entities/Pagamento";
 interface DeletePacienteRequest {
     id: number;
     clinica_id: number;
+    usuario_id: number; // 🔒 RLS
 }
 
 export class DeletePacienteService {
-    async execute({ id, clinica_id }: DeletePacienteRequest): Promise<void> {
+    async execute({ id, clinica_id, usuario_id }: DeletePacienteRequest): Promise<void> {
         const pacienteRepository = AppDataSource.getRepository(Paciente);
 
-        // Verificar se o paciente existe e pertence à clínica
+        // Verificar se o paciente existe e pertence ao usuário (RLS)
         const paciente = await pacienteRepository.findOneBy({
             id,
-            clinica_id
+            clinica_id,
+            usuario_id
         });
 
         if (!paciente) {

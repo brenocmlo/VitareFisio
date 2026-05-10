@@ -10,6 +10,10 @@ export class Paciente {
     clinica_id: number;
 
     @Index()
+    @Column({ nullable: true })
+    usuario_id: number; // Dono do paciente (RLS)
+
+    @Index()
     @Column()
     nome: string;
 

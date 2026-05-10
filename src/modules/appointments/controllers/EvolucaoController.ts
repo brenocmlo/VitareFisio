@@ -21,6 +21,8 @@ export class EvolucaoController {
                 objetivos_tratamento
             } = req.body;
             
+            const { id: usuario_id } = req.user; // 🔒 Puxando o id do usuário (RLS)
+
             const createEvolucaoService = new CreateEvolucaoService();
 
             const evolucao = await createEvolucaoService.execute({
@@ -32,7 +34,8 @@ export class EvolucaoController {
                 plano,
                 cid_10,
                 diagnostico_fisioterapeutico,
-                objetivos_tratamento
+                objetivos_tratamento,
+                usuario_id: Number(usuario_id) // 🔒 RLS
             });
 
             return res.status(201).json(evolucao);
@@ -45,9 +48,10 @@ export class EvolucaoController {
     async index(req: Request, res: Response) {
         try {
             const { paciente_id } = req.params;
+            const { id: usuario_id } = req.user; // 🔒 RLS
 
             const listHistorico = new ListEvolucoesByPacienteService();
-            const historico = await listHistorico.execute(Number(paciente_id));
+            const historico = await listHistorico.execute(Number(paciente_id), Number(usuario_id)); // 🔒 RLS
 
             return res.json(historico);
         } catch (error: any) {
@@ -68,6 +72,7 @@ export class EvolucaoController {
                 objetivos_tratamento
             } = req.body;
 
+            const { id: usuario_id } = req.user; // 🔒 RLS
             const updateEvolucao = new UpdateEvolucaoService();
 
             const evolucao = await updateEvolucao.execute({
@@ -78,7 +83,8 @@ export class EvolucaoController {
                 plano,
                 cid_10,
                 diagnostico_fisioterapeutico,
-                objetivos_tratamento
+                objetivos_tratamento,
+                usuario_id: Number(usuario_id) // 🔒 RLS
             });
 
             return res.json(evolucao);
@@ -90,8 +96,10 @@ export class EvolucaoController {
     async finalize(req: Request, res: Response) {
         try {
             const { id } = req.params;
+            const { id: usuario_id } = req.user; // 🔒 RLS
+
             const finalizeEvolucao = new FinalizeEvolucaoService();
-            const evolucao = await finalizeEvolucao.execute(Number(id));
+            const evolucao = await finalizeEvolucao.execute(Number(id), Number(usuario_id)); // 🔒 RLS
 
             return res.json(evolucao);
         } catch (error: any) {

@@ -13,6 +13,7 @@ interface IRequest {
     cid_10?: string;
     diagnostico_fisioterapeutico?: string;
     objetivos_tratamento?: string;
+    usuario_id: number; // 🔒 RLS
 }
 
 export class CreateEvolucaoService {
@@ -22,8 +23,8 @@ export class CreateEvolucaoService {
         const pacienteRepo = AppDataSource.getRepository(Paciente);
 
         const paciente = await pacienteRepo.findOneBy({ id: data.paciente_id });
-        if (!paciente) {
-            throw new Error("Paciente não encontrado.");
+        if (!paciente || paciente.usuario_id !== data.usuario_id) {
+            throw new Error("Acesso negado: Você não tem permissão para alterar os registros deste paciente (LGPD).");
         }
 
         const agendamento = await agendamentoRepo.findOneBy({ id: data.agendamento_id });

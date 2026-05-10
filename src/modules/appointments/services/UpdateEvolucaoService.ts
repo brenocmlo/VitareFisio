@@ -1,5 +1,6 @@
 import { AppDataSource } from "../../../data-source";
 import { Evolucao } from "../entities/Evolucao";
+import { Paciente } from "../../patients/entities/Paciente";
 
 interface IRequest {
     id: number;
@@ -10,6 +11,7 @@ interface IRequest {
     cid_10?: string;
     diagnostico_fisioterapeutico?: string;
     objetivos_tratamento?: string;
+    usuario_id: number; // 🔒 RLS
 }
 
 export class UpdateEvolucaoService {
@@ -20,6 +22,13 @@ export class UpdateEvolucaoService {
 
         if (!evolucao) {
             throw new Error("Evolução não encontrada.");
+        }
+
+        const pacienteRepo = AppDataSource.getRepository(Paciente);
+        const paciente = await pacienteRepo.findOneBy({ id: evolucao.paciente_id });
+        
+        if (!paciente || paciente.usuario_id !== data.usuario_id) {
+            throw new Error("Acesso negado: Você não tem permissão para alterar os registros deste paciente (LGPD).");
         }
 
         // Trava de Segurança: Evolução assinada digitalmente não pode ser alterada!

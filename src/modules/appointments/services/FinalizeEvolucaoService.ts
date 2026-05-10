@@ -1,9 +1,10 @@
 import crypto from "crypto";
 import { AppDataSource } from "../../../data-source";
 import { Evolucao } from "../entities/Evolucao";
+import { Paciente } from "../../patients/entities/Paciente";
 
 export class FinalizeEvolucaoService {
-    async execute(evolucao_id: number) {
+    async execute(evolucao_id: number, usuario_id: number) { // 🔒 RLS
         const repo = AppDataSource.getRepository(Evolucao);
         
         // Busca a evolução pelo ID
@@ -11,6 +12,13 @@ export class FinalizeEvolucaoService {
 
         if (!evolucao) {
             throw new Error("Evolução não encontrada.");
+        }
+
+        const pacienteRepo = AppDataSource.getRepository(Paciente);
+        const paciente = await pacienteRepo.findOneBy({ id: evolucao.paciente_id });
+        
+        if (!paciente || paciente.usuario_id !== usuario_id) {
+            throw new Error("Acesso negado: Você não tem permissão para assinar os registros deste paciente (LGPD).");
         }
         
         if (evolucao.finalizada) {

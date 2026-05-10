@@ -13,8 +13,10 @@ export class PacienteController {
     async create(req: Request, res: Response) {
         try {
             const data = req.body;
+            const { id: usuario_id } = req.user; // 🔒 Puxando o id do usuário logado (RLS)
+
             const createPacienteService = new CreatePacienteService();
-            const paciente = await createPacienteService.execute(data);
+            const paciente = await createPacienteService.execute({ ...data, usuario_id: Number(usuario_id) });
             return res.status(201).json(paciente);
         } catch (error: any) {
             return res.status(400).json({ error: error.message });
@@ -25,12 +27,13 @@ export class PacienteController {
     async index(req: Request, res: Response) {
         try {
             const { search, page, limit } = req.query;
-            // 🔒 SEGURANÇA: clinica_id sempre vem do token JWT, nunca da URL
-            const { clinica_id } = req.user;
+            // 🔒 SEGURANÇA: clinica_id e usuario_id sempre vem do token JWT
+            const { clinica_id, id: usuario_id } = req.user;
 
             const listPacientesService = new ListPacientesService();
             const result = await listPacientesService.execute(
                 Number(clinica_id),
+                Number(usuario_id), // RLS - Só pacientes do próprio usuário
                 search ? String(search) : undefined,
                 page ? Number(page) : 1,
                 limit ? Number(limit) : 20
@@ -65,7 +68,8 @@ export class PacienteController {
                 .addSelect("COALESCE(pacotes.total_restantes, 0)", "sessoes_restantes")
                 .addSelect("COALESCE(pacotes.total_pacote, 0)", "sessoes_total")
                 .where("paciente.id = :id", { id: Number(id) })
-                .andWhere("paciente.clinica_id = :clinica_id", { clinica_id: Number(clinica_id) });
+                .andWhere("paciente.clinica_id = :clinica_id", { clinica_id: Number(clinica_id) })
+                .andWhere("paciente.usuario_id = :usuario_id", { usuario_id: Number(req.user.id) }); // 🔒 RLS
 
             const row = await query.getRawOne();
 
@@ -96,12 +100,13 @@ export class PacienteController {
     async delete(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const { clinica_id } = req.user as any; // 🔒 Puxando direto do Token JWT
+            const { clinica_id, id: usuario_id } = req.user as any; // 🔒 Puxando direto do Token JWT
 
             const deletePacienteService = new DeletePacienteService();
             await deletePacienteService.execute({
                 id: Number(id),
-                clinica_id: Number(clinica_id)
+                clinica_id: Number(clinica_id),
+                usuario_id: Number(usuario_id) // 🔒 RLS
             });
 
             return res.status(200).json({ message: "Paciente removido com sucesso." });
@@ -117,12 +122,13 @@ export class PacienteController {
     async showByCpf(req: Request, res: Response) {
         try {
             const { cpf } = req.params;
-            const { clinica_id } = req.user as any; // 🔒 Puxando direto do Token JWT
+            const { clinica_id, id: usuario_id } = req.user as any; // 🔒 Puxando direto do Token JWT
 
             const service = new FindPacienteByCpfService();
             const paciente = await service.execute({ 
                 cpf : string().parse(cpf), // Validação básica de CPF
-                clinica_id: Number(clinica_id) 
+                clinica_id: Number(clinica_id),
+                usuario_id: Number(usuario_id) // 🔒 RLS
             });
 
             if (!paciente) {
