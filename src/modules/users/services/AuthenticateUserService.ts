@@ -2,6 +2,7 @@ import { compare } from "bcryptjs";
 import { sign } from "jsonwebtoken";
 import { AppDataSource } from "../../../data-source";
 import { Usuario } from "../entities/Usuario";
+import { UserSubscription } from "../entities/UserSubscription";
 
 export class AuthenticateUserService {
     async execute({ email, senha }: any) {
@@ -23,6 +24,12 @@ export class AuthenticateUserService {
             throw new Error("E-mail ou senha incorretos.");
         }
 
+        // Busca a assinatura do usuário (Kiwify)
+        const subscriptionRepo = AppDataSource.getRepository(UserSubscription);
+        const subscription = await subscriptionRepo.findOne({
+            where: { usuario_id: usuario.id }
+        });
+
         // ADICIONADO: "tipo" e "is_autonomo" no payload do token
         const token = sign({ 
             clinica_id: usuario.clinica_id,
@@ -40,7 +47,9 @@ export class AuthenticateUserService {
                 email: usuario.email,
                 clinica_id: usuario.clinica_id,
                 tipo: usuario.tipo,
-                is_autonomo: usuario.is_autonomo
+                is_autonomo: usuario.is_autonomo,
+                subscription_status: subscription?.status || 'PENDING',
+                subscription_end: subscription?.current_period_end || null,
             },
             token,
         };
