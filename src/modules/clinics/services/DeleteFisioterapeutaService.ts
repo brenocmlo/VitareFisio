@@ -7,10 +7,10 @@ export class DeleteFisioterapeutaService {
         const fisioRepository = AppDataSource.getRepository(Fisioterapeuta);
         const usuarioRepository = AppDataSource.getRepository(Usuario);
         
-        // Verifica se quem está pedindo para deletar é o dono do sistema (is_autonomo)
+        // Verifica se quem está pedindo para deletar é o admin ou dono do sistema
         const requestingUser = await usuarioRepository.findOne({ where: { id: requesting_user_id } });
-        if (!requestingUser || !requestingUser.is_autonomo) {
-            throw new Error("Apenas o administrador principal (dono do sistema) pode remover membros da equipe.");
+        if (!requestingUser || (requestingUser.tipo !== 'admin' && !requestingUser.is_autonomo)) {
+            throw new Error("Apenas administradores podem remover membros da equipe.");
         }
 
         // 1. Busca o perfil do fisioterapeuta pelo ID que veio do clique na lixeira
@@ -22,14 +22,22 @@ export class DeleteFisioterapeutaService {
             throw new Error("Profissional não encontrado na lista de fisioterapeutas.");
         }
 
+        // Garante que o administrador só possa remover membros da própria clínica
+        if (fisioterapeuta.clinica_id !== requestingUser.clinica_id) {
+            throw new Error("Você não tem permissão para remover profissionais de outra clínica.");
+        }
+
         // 2. Usa o EMAIL do fisioterapeuta como ponte para achar o acesso de login dele
-        // (Como o email é único no seu sistema, é a forma mais segura de interligar as tabelas)
         const usuario = await usuarioRepository.findOne({
             where: { email: fisioterapeuta.email } 
         });
 
         // 3. Se encontrar o usuário de login, faz as validações e revoga o acesso
         if (usuario) {
+            // Garante que o administrador não delete a si mesmo
+            if (usuario.id === requestingUser.id) {
+                throw new Error("Você não pode remover o seu próprio acesso.");
+            }
             // Deleta o login do sistema
             await usuarioRepository.remove(usuario);
         }
