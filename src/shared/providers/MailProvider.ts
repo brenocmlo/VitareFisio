@@ -41,7 +41,7 @@ export default class MailProvider {
 
     const sender = process.env.RESEND_API_KEY 
       ? (process.env.EMAIL_FROM || 'onboarding@resend.dev')
-      : 'Equipe SomosFisio <equipe@vitarefisio.com.br>';
+      : 'Equipe SomosFisio <equipe@somosfisio.com.br>';
 
     const message = await this.client.sendMail({
       from: sender,
