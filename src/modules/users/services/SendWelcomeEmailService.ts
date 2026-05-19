@@ -69,6 +69,8 @@ export class SendWelcomeEmailService {
                 </div>
             </div>
             `
+        ,
+            'Bem-vindo ao SomosFisio! Defina sua senha de acesso'
         );
 
         return { message: "E-mail de boas-vindas enviado." };

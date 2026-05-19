@@ -3,6 +3,7 @@ import { sign } from "jsonwebtoken";
 import { AppDataSource } from "../../../data-source";
 import { Usuario } from "../entities/Usuario";
 import { UserSubscription } from "../entities/UserSubscription";
+import { Fisioterapeuta } from "../../clinics/entities/Fisioterapeuta";
 
 export class AuthenticateUserService {
     async execute({ email, senha }: any) {
@@ -30,6 +31,12 @@ export class AuthenticateUserService {
             where: { usuario_id: usuario.id }
         });
 
+        // Busca o crefito do usuário
+        const fisioRepo = AppDataSource.getRepository(Fisioterapeuta);
+        const fisio = await fisioRepo.findOne({
+            where: { email: usuario.email }
+        });
+
         // ADICIONADO: "tipo" e "is_autonomo" no payload do token
         const token = sign({ 
             clinica_id: usuario.clinica_id,
@@ -50,6 +57,7 @@ export class AuthenticateUserService {
                 is_autonomo: usuario.is_autonomo,
                 subscription_status: subscription?.status || 'PENDING',
                 subscription_end: subscription?.current_period_end || null,
+                crefito: fisio?.crefito || null,
             },
             token,
         };

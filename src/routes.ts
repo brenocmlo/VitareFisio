@@ -117,6 +117,7 @@ routes.get("/dashboard", ensureAuthenticated, checkRole(["admin", "fisioterapeut
 routes.post("/fisioterapeutas", ensureAuthenticated, checkRole(["admin"]), validateRequest(createFisioterapeutaSchema), fisioterapeutaController.create);
 routes.get("/fisioterapeutas", ensureAuthenticated, checkRole(["admin", "recepcao"]), fisioterapeutaController.index);
 routes.delete("/fisioterapeutas/:id", ensureAuthenticated, checkRole(["admin"]), fisioterapeutaController.delete);
+routes.patch("/fisioterapeutas/crefito", ensureAuthenticated, fisioterapeutaController.updateCrefito);
 
 // --- PACIENTES ---
 routes.post("/pacientes", ensureAuthenticated, checkRole(["admin", "fisioterapeuta", "recepcao"]), validateRequest(createPacienteSchema), pacienteController.create);

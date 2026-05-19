@@ -36,7 +36,7 @@ export default class MailProvider {
     });
   }
 
-  public async sendMail(to: string, body: string) {
+  public async sendMail(to: string, body: string, subject = 'Recuperação de Senha - SomosFisio') {
     if (!this.client) await this.setup();
 
     const sender = process.env.RESEND_API_KEY 
@@ -46,7 +46,7 @@ export default class MailProvider {
     const message = await this.client.sendMail({
       from: sender,
       to,
-      subject: 'Recuperação de Senha - SomosFisio',
+      subject,
       html: body,
     });
 

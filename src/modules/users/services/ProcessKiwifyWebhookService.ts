@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { AppDataSource } from "../../../data-source";
 import { Usuario } from "../entities/Usuario";
 import { CreateAutonomoService } from "../../clinics/services/CreateAutonomoService";
-import { SendForgotPasswordEmailService } from "./SendForgotPasswordEmailService";
+import { SendWelcomeEmailService } from "./SendWelcomeEmailService";
 import { UserSubscription } from "../entities/UserSubscription";
 import { WebhookEvent } from "../entities/WebhookEvent";
 import { IKiwifyWebhook } from "../dtos/IKiwifyWebhook";
@@ -11,6 +11,8 @@ import { IKiwifyWebhook } from "../dtos/IKiwifyWebhook";
 type CreateAutonomousWorkspaceInput = {
   email: string;
   name: string;
+  cpf?: string;
+  mobile?: string;
   expirationDate: Date;
 };
 
@@ -81,6 +83,8 @@ export class ProcessKiwifyWebhookService {
           const createdUserId = await this.createAutonomousWorkspace({
             email: customer.email,
             name: customer.full_name || customer.email,
+            cpf: customer.CPF,
+            mobile: customer.mobile,
             expirationDate: newExpirationDate,
           });
           await this.upsertSubscription({
@@ -153,18 +157,23 @@ export class ProcessKiwifyWebhookService {
   private async createAutonomousWorkspace({
     email,
     name,
+    cpf,
+    mobile,
     expirationDate,
   }: CreateAutonomousWorkspaceInput): Promise<number> {
     const createAutonomo = new CreateAutonomoService();
     const tempPassword = crypto.randomBytes(8).toString("hex");
 
+    // Remove qualquer formatação do CPF para manter apenas os números
+    const cleanCpf = cpf ? cpf.replace(/\D/g, "") : "00000000000";
+
     const created = await createAutonomo.execute({
       nome: name,
       email,
-      cpf: "00000000000",
+      cpf: cleanCpf.length === 11 ? cleanCpf : "00000000000",
       password: tempPassword,
       crefito: "Pendente",
-      telefone: "",
+      telefone: mobile || "",
     });
 
     const createdUserId = Number((created as any)?.user?.id);
@@ -172,13 +181,13 @@ export class ProcessKiwifyWebhookService {
       throw new Error("Falha ao obter user.id após criação do autônomo.");
     }
 
-    // Envia o email de primeiro acesso ("esqueci a senha")
+    // Envia o email de boas-vindas com link de ativação
     try {
-      const sendEmail = new SendForgotPasswordEmailService();
+      const sendEmail = new SendWelcomeEmailService();
       await sendEmail.execute(email);
-      console.log(`[Kiwify] Email de primeiro acesso enviado para ${email}`);
+      console.log(`[Kiwify] Email de boas-vindas enviado para ${email}`);
     } catch (err) {
-      console.error(`[Kiwify] Erro ao enviar email de primeiro acesso para ${email}:`, err);
+      console.error(`[Kiwify] Erro ao enviar email de boas-vindas para ${email}:`, err);
     }
 
     return createdUserId;
