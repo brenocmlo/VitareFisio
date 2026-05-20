@@ -3,9 +3,7 @@ import { Router } from "express";
 import multer from "multer";
 
 // --- CONTROLLERS ---
-import { UserController } from "./modules/users/controllers/UserController";
 import { SessionsController } from "./modules/users/controllers/SessionsController";
-import { ClinicaController } from "./modules/clinics/controllers/ClinicaController";
 import { FisioterapeutaController } from "./modules/clinics/controllers/FisioterapeutaController";
 import { PacienteController } from "./modules/patients/controllers/PacienteController";
 import { PacoteController } from "./modules/patients/controllers/PacoteController";
@@ -16,7 +14,6 @@ import { DashboardController } from "./modules/clinics/controllers/DashboardCont
 import { AnexoController } from "./modules/patients/controllers/AnexoController";
 import { AnamneseController } from "./modules/patients/controllers/AnamneseController";
 import { ReportController } from "./modules/clinics/controllers/ReportController";
-import { RegistrationController } from "./modules/clinics/controllers/RegistrationController";
 import { GoogleCalendarController } from "./modules/appointments/controllers/GoogleCalendarController";
 import { ForgotPasswordController } from "./modules/users/controllers/ForgotPasswordController";
 import { AbacatePayWebhookController } from "./modules/users/controllers/AbacatePayWebhookController";
@@ -29,14 +26,11 @@ import { validateRequest } from "./shared/middlewares/validateRequest";
 import { authLimiter } from "./shared/middlewares/rateLimiter";
 
 // --- SCHEMAS ---
-import { createUserSchema } from "./modules/users/schemas/createUserSchema";
-import { createClinicaSchema } from "./modules/clinics/schemas/createClinicaSchema";
 import { createFisioterapeutaSchema } from "./modules/clinics/schemas/createFisioterapeutaSchema";
 import { createPacienteSchema } from "./modules/patients/schemas/createPacienteSchema";
 import { createAgendamentoSchema } from "./modules/appointments/schemas/createAgendamentoSchema";
 import { createEvolucaoSchema } from "./modules/appointments/schemas/createEvolucaoSchema";
 import { createPagamentoSchema } from "./modules/finance/schemas/createPagamentoSchema";
-import { createAutonomoSchema } from "./modules/clinics/schemas/createAutonomoSchema";
 
 const routes = Router();
 
@@ -48,10 +42,8 @@ const routes = Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 // --- INSTÂNCIAS ---
-const userController = new UserController();
 const sessionsController = new SessionsController();
 const forgotPasswordController = new ForgotPasswordController();
-const clinicaController = new ClinicaController();
 const fisioterapeutaController = new FisioterapeutaController();
 const pacienteController = new PacienteController();
 const pacoteController = new PacoteController();
@@ -62,7 +54,6 @@ const dashboardController = new DashboardController();
 const anexoController = new AnexoController();
 const anamneseController = new AnamneseController();
 const reportController = new ReportController();
-const registrationController = new RegistrationController();
 const googleCalendarController = new GoogleCalendarController();
 const abacatePayWebhookController = new AbacatePayWebhookController();
 const kiwifyWebhookController = new KiwifyWebhookController();
@@ -84,10 +75,7 @@ routes.get("/debug-env", (_, res) => {
 });
 routes.post("/password/forgot", authLimiter, forgotPasswordController.send);
 routes.post("/password/reset", authLimiter, forgotPasswordController.reset);
-routes.post("/usuarios", authLimiter, validateRequest(createUserSchema), userController.create);
-routes.post("/clinicas", validateRequest(createClinicaSchema), clinicaController.create);
 routes.post("/login", authLimiter, sessionsController.create);
-routes.post("/signup/autonomo", authLimiter, validateRequest(createAutonomoSchema), registrationController.signupAutonomo);
 routes.post(
   "/webhooks/abacatepay",
   express.raw({ type: "application/json" }),

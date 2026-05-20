@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { AppDataSource } from "../../../data-source";
 import { Usuario } from "../entities/Usuario";
 import { CreateAutonomoService } from "../../clinics/services/CreateAutonomoService";
+import { SendWelcomeEmailService } from "./SendWelcomeEmailService";
 import { UserSubscription } from "../entities/UserSubscription";
 import { WebhookEvent } from "../entities/WebhookEvent";
 import {
@@ -90,6 +91,15 @@ export class ProcessAbacatePayWebhookService {
           planCycle,
           newExpirationDate,
         });
+
+        // Envia o email de boas-vindas com link de ativação
+        try {
+          const sendEmail = new SendWelcomeEmailService();
+          await sendEmail.execute(customer.email);
+          console.log(`[ABACATEPAY] Email de boas-vindas enviado para ${customer.email}`);
+        } catch (err) {
+          console.error(`[ABACATEPAY] Erro ao enviar email de boas-vindas para ${customer.email}:`, err);
+        }
       } else {
         await this.upsertSubscription({
           usuarioId: user.id,
