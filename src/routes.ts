@@ -16,6 +16,7 @@ import { AnamneseController } from "./modules/patients/controllers/AnamneseContr
 import { ReportController } from "./modules/clinics/controllers/ReportController";
 import { GoogleCalendarController } from "./modules/appointments/controllers/GoogleCalendarController";
 import { ForgotPasswordController } from "./modules/users/controllers/ForgotPasswordController";
+import { LeadsController } from "./modules/users/controllers/LeadsController";
 import { AbacatePayWebhookController } from "./modules/users/controllers/AbacatePayWebhookController";
 import { KiwifyWebhookController } from "./modules/users/controllers/KiwifyWebhookController";
 
@@ -44,6 +45,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 // --- INSTÂNCIAS ---
 const sessionsController = new SessionsController();
 const forgotPasswordController = new ForgotPasswordController();
+const leadsController = new LeadsController();
 const fisioterapeutaController = new FisioterapeutaController();
 const pacienteController = new PacienteController();
 const pacoteController = new PacoteController();
@@ -74,6 +76,7 @@ routes.get("/debug-env", (_, res) => {
     });
 });
 routes.post("/password/forgot", authLimiter, forgotPasswordController.send);
+routes.post("/leads/qualify", authLimiter, leadsController.qualify);
 routes.post("/password/reset", authLimiter, forgotPasswordController.reset);
 routes.post("/login", authLimiter, sessionsController.create);
 routes.post(
