@@ -51,13 +51,16 @@ export class LeadsController {
                 </div>
             `;
 
-            await mailProvider.sendMail(
+            // Envia o e-mail em segundo plano para não travar a resposta HTTP
+            mailProvider.sendMail(
                 recipient,
                 emailBody,
                 `Novo Lead Qualificado: ${nome}`
-            );
+            ).catch(err => {
+                console.error("❌ Erro ao enviar e-mail de lead em segundo plano:", err);
+            });
 
-            return res.status(200).json({ message: "Qualificação enviada com sucesso por e-mail." });
+            return res.status(200).json({ message: "Qualificação registrada com sucesso." });
         } catch (error: any) {
             return res.status(500).json({ error: error.message });
         }
