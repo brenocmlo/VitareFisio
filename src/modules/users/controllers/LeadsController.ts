@@ -13,7 +13,7 @@ export class LeadsController {
             const mailProvider = new MailProvider();
             
             // Envia para o email comercial da SomosFisio
-            const recipient = process.env.EMAIL_TO || process.env.EMAIL_FROM || 'suporte@somosfisio.com.br';
+            const recipient = process.env.EMAIL_TO || 'somosfisioappp@gmail.com';
             
             const emailBody = `
                 <div style="font-family: sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
